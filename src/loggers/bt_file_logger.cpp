@@ -12,7 +12,7 @@ FileLogger::FileLogger(const BT::Tree& tree, const char* filename, uint16_t buff
     buffer_.reserve(buffer_max_size_);
     if(store_values) transition_maps_buffer_.reserve(buffer_max_size_);
   }
-
+  
   enableTransitionToIdle(true);
 
   flatbuffers::FlatBufferBuilder builder(1024);

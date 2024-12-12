@@ -34,6 +34,8 @@ class PublisherZMQ : public StatusChangeLogger
 
     virtual void debugCallback(Duration timestamp, const TreeNode& node, NodeAdvancedStatus prev_status,
                           NodeAdvancedStatus status);
+    
+    void updateTransitionBuffer(SerializedTransition&& transition, SerializedTransitionMaps&& serialized_transition_maps, const bool send_updates_if_possible = true);
 
     virtual void flush() override;
 

@@ -6,6 +6,8 @@
 #include "behaviortree_cpp/loggers/bt_minitrace_logger.h"
 #include "behaviortree_cpp/json_export.h"
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
+
 #include "behavior_tree_eut_plugins/eut_debug.h"
 #include "behavior_tree_eut_plugins/loggers/bt_zmq_publisher.h"
 #include "behavior_tree_eut_plugins/loggers/bt_file_logger.h"
@@ -287,8 +289,14 @@ int main()
   // get the tree and poll status updates.
   const unsigned port = 1667;
   
+  // Get the share directory of the package
+  std::string package_share_dir = ament_index_cpp::get_package_share_directory("behavior_tree_eut_plugins");
+
+  // Construct the path to the XML file
+  std::string tree_file_path = package_share_dir + "/examples/trees/t1.xml";
+
   BT::DebuggableTree debugTree{std::make_shared<BT::Tree>(
-    factory.createTreeFromFile("/home/ros2_ws/src/behavior_tree_eut_plugins/src/examples/t1.xml"))};
+    factory.createTreeFromFile(tree_file_path))};
   BT::Tree& tree = *(debugTree.tree());
   std::cout << "----------- XML file  ----------\n"
             << BT::WriteTreeToXML(tree, false, false)

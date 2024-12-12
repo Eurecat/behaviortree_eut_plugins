@@ -330,6 +330,29 @@ void PublisherZMQ::createStatusBuffer()
   });
 }
 
+void PublisherZMQ::updateTransitionBuffer(SerializedTransition&& transition, SerializedTransitionMaps&& serialized_transition_maps, const bool send_updates_if_possible)
+{
+  {
+    std::unique_lock<std::mutex> lock(mutex_);
+    transition_buffer_.push_back(transition);
+    transition_maps_buffer_.push_back(serialized_transition_maps);
+  }
+
+  if (send_updates_if_possible && !send_pending_.exchange(true))
+  {
+    send_future_ = std::async(std::launch::async, [this]() {
+      std::unique_lock<std::mutex> lock(mutex_);
+      const bool is_server_inactive = send_condition_variable_.wait_for(
+          lock, min_time_between_msgs_, [this]() { return !active_server_; });
+      lock.unlock();
+      if (!is_server_inactive)
+      {
+        flush();
+      }
+    });
+  }
+}
+
 void PublisherZMQ::debugCallback(Duration timestamp, const TreeNode& node, NodeAdvancedStatus prev_status,
                           NodeAdvancedStatus status)
 {
@@ -344,40 +367,7 @@ void PublisherZMQ::debugCallback(Duration timestamp, const TreeNode& node, NodeA
       (isStatusCompleted(toNodeStatus(prev_status)) && status == BT::NodeAdvancedStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(node, PortDirection::OUTPUT, clean_output_)), 
       /*node.getBlackboardValuesMap()*/{}); // TODO: review bb serialization protocol: for now avoid to send within the msg the entire BB dump: overkill and barely used on the other side
 
-  // if(node.type() == BT::NodeType::SUBTREE)
-  // {
-  //   try 
-  //   {
-  //     const SubTreeNode& subtree_node = dynamic_cast<const SubTreeNode&>(node);
-  //     // add manually for subtree port remappings
-  //     serialized_transition_maps = SerializeTransitionMaps(node.UID(), timestamp, 
-  //      (isStatusCompleted(prev_status) && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(subtree_node, PortDirection::INPUT, clean_output_)));
-  //   }
-  //   catch(const std::bad_cast& e) 
-  //   {
-  //       // Cast failed
-  //   }
-  // }
-
-  {
-    std::unique_lock<std::mutex> lock(mutex_);
-    transition_buffer_.push_back(transition);
-    transition_maps_buffer_.push_back(serialized_transition_maps);
-  }
-
-  if (!send_pending_.exchange(true))
-  {
-    send_future_ = std::async(std::launch::async, [this]() {
-      std::unique_lock<std::mutex> lock(mutex_);
-      const bool is_server_inactive = send_condition_variable_.wait_for(
-          lock, min_time_between_msgs_, [this]() { return !active_server_; });
-      lock.unlock();
-      if (!is_server_inactive)
-      {
-        flush();
-      }
-    });
-  }
+  updateTransitionBuffer(std::move(transition), std::move(serialized_transition_maps));
 }
 
 void PublisherZMQ::callback(Duration timestamp, const TreeNode& node,
@@ -394,40 +384,7 @@ void PublisherZMQ::callback(Duration timestamp, const TreeNode& node,
       (isStatusCompleted(prev_status) && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(node, PortDirection::OUTPUT, clean_output_)), 
       /*node.getBlackboardValuesMap()*/{}); // TODO: review bb serialization protocol: for now avoid to send within the msg the entire BB dump: overkill and barely used on the other side
 
-  // if(node.type() == BT::NodeType::SUBTREE)
-  // {
-  //   try 
-  //   {
-  //     const SubTreeNode& subtree_node = dynamic_cast<const SubTreeNode&>(node);
-  //     // add manually for subtree port remappings
-  //     serialized_transition_maps = SerializeTransitionMaps(node.UID(), timestamp, 
-  //      (isStatusCompleted(prev_status) && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(subtree_node, PortDirection::INPUT, clean_output_)));
-  //   }
-  //   catch(const std::bad_cast& e) 
-  //   {
-  //       // Cast failed
-  //   }
-  // }
-
-  {
-    std::unique_lock<std::mutex> lock(mutex_);
-    transition_buffer_.push_back(transition);
-    transition_maps_buffer_.push_back(serialized_transition_maps);
-  }
-
-  if (!send_pending_.exchange(true))
-  {
-    send_future_ = std::async(std::launch::async, [this]() {
-      std::unique_lock<std::mutex> lock(mutex_);
-      const bool is_server_inactive = send_condition_variable_.wait_for(
-          lock, min_time_between_msgs_, [this]() { return !active_server_; });
-      lock.unlock();
-      if (!is_server_inactive)
-      {
-        flush();
-      }
-    });
-  }
+  updateTransitionBuffer(std::move(transition), std::move(serialized_transition_maps));
   
 }
 

@@ -10,6 +10,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(behaviortree_cpp REQUIRED) # Ensure this is findable
 
 # Include directories
@@ -59,7 +60,14 @@ install(
 # Add an executable example (if any)
 add_executable(01_basic_example src/examples/01_basic.cpp) # Replace main.cpp with the actual executable file
 target_link_libraries(01_basic_example ${PROJECT_NAME}_lib)
+ament_target_dependencies(01_basic_example ament_index_cpp)
 
+# Install the examples folder into the share directory
+install(
+  DIRECTORY examples/
+  DESTINATION share/${PROJECT_NAME}/examples
+)
+  
 # Install executables
 install(
   TARGETS 01_basic_example
