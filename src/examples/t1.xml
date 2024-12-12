@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="DoorClosed">
+        <Fallback name="tryOpen">
+            <Action ID="OpenDoor"/>
+            <RetryUntilSuccessful num_attempts="5">
+                <Action ID="PickLock"/>
+            </RetryUntilSuccessful>
+            <Action ID="SmashDoor"/>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="MainTree">
+        <Sequence>
+            <Script code="door_open:=false"/>
+            <Action ID="LogBool" val="{door_open}"/>
+            <Action ID="LogString" something="{door_open}"/>
+            <SetBlackboard output_key="test" value="{door_open}"/>
+            <Action _skipIf="test == 1" ID="UpdatePosition" pos="{pos_2D}"/>
+            <Fallback>
+                <Inverter>
+                    <Action ID="IsDoorClosed"/>
+                </Inverter>
+                <SubTree ID="DoorClosed" _autoremap="false" x="{door_open}"/>
+            </Fallback>
+            <Action ID="PassThroughDoor"/>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <SubTree ID="DoorClosed" description="">
+            <input_port default="false" name="_autoremap">If true, all automated port remapping are applied</input_port>
+            <input_port name="x"/>
+        </SubTree>
+        <Action ID="IsDoorClosed" description=""/>
+        <Action ID="LogBool" description="">
+            <input_port name="val"/>
+        </Action>
+        <Action ID="LogString" description="">
+            <input_port name="something"/>
+        </Action>
+        <SubTree ID="MainTree" description=""/>
+        <Action ID="OpenDoor" description=""/>
+        <Action ID="PassThroughDoor" description=""/>
+        <Action ID="PickLock" description=""/>
+        <Action ID="SmashDoor" description=""/>
+        <Action ID="UpdatePosition" description="">
+            <input_port name="pos"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
