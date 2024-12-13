@@ -10,6 +10,7 @@
 
 #include "behavior_tree_eut_plugins/eut_debug.h"
 #include "behavior_tree_eut_plugins/loggers/bt_zmq_publisher.h"
+
 #include "behavior_tree_eut_plugins/loggers/bt_file_logger.h"
 
 
@@ -121,7 +122,7 @@ void CrossDoor::reset()
  *  But this time we also show how to connect
  */
 
-// A custom struct  that I want to visualize in Groot2
+// A custom struct  that I want to visualize in Groot
 struct Position2D
 {
   double x;
@@ -280,14 +281,8 @@ int main()
 
   // factory.registerBehaviorTreeFromText(xml_text);
 
-  // Add this to allow Groot2 to visualize your custom type
+  // Add this to allow Groot to visualize your custom type
   BT::RegisterJsonDefinition<Position2D>();
-
-  // auto tree = factory.createTree("MainTree");
-  
-  // Connect the Groot2Publisher. This will allow Groot2 to
-  // get the tree and poll status updates.
-  const unsigned port = 1667;
   
   // Get the share directory of the package
   std::string package_share_dir = ament_index_cpp::get_package_share_directory("behavior_tree_eut_plugins");
@@ -295,14 +290,20 @@ int main()
   // Construct the path to the XML file
   std::string tree_file_path = package_share_dir + "/examples/trees/t1.xml";
 
-  BT::DebuggableTree debugTree{std::make_shared<BT::Tree>(
-    factory.createTreeFromFile(tree_file_path))};
-  BT::Tree& tree = *(debugTree.tree());
+  std::shared_ptr<BT::Tree> tree_ptr = std::make_shared<BT::Tree>(factory.createTreeFromFile(tree_file_path));
+  BT::DebuggableTree debugTree{tree_ptr};
+
+  BT::Tree& tree = *(tree_ptr); // you don't really need it, but let's assume you wanna have a direct ref. to the object
+
   std::cout << "----------- XML file  ----------\n"
             << BT::WriteTreeToXML(tree, false, false)
             << "--------------------------------\n";
-  // BT::Groot2Publisher publisher(tree, port);
+  
+  // Connect the PublisherZMQ. This will allow GrootEUT to
+  // get the tree and poll status updates.
+  const unsigned port = 1667;
   BT::PublisherZMQ publisher(debugTree, port);
+
   BT::FileLogger logger(tree, "devistree.fbl", 10, true);
 
   // Add two more loggers, to save the transitions into a file.
@@ -319,7 +320,7 @@ int main()
   {
     std::cout << "Start" << std::endl;
     cross_door.reset();
-    debugTree.tree()->tickWhileRunning();
+    tree.tickWhileRunning();
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   }
 
