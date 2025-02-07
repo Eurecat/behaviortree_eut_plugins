@@ -3,8 +3,8 @@
 #ifndef FLATBUFFERS_GENERATED_BTLOGGER_SERIALIZATION_H_
 #define FLATBUFFERS_GENERATED_BTLOGGER_SERIALIZATION_H_
 
-#include "behavior_tree_eut_plugins/flatbuffers/flatbuffers.h"
-#include "behavior_tree_eut_plugins/eut_basic_types.h"
+#include "behaviortree_eut_plugins/flatbuffers/flatbuffers.h"
+#include "behaviortree_eut_plugins/eut_basic_types.h"
 
 namespace Serialization
 {

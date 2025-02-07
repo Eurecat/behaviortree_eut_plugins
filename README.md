@@ -15,8 +15,8 @@ At the moment the package compiles and has been tested with **ROS2 humble**, the
 
 For monitoring and debugging the tree just include the following headers:
 ```
-#include "behavior_tree_eut_plugins/eut_debug.h"
-#include "behavior_tree_eut_plugins/loggers/bt_zmq_publisher.h"
+#include "behaviortree_eut_plugins/eut_debug.h"
+#include "behaviortree_eut_plugins/loggers/bt_zmq_publisher.h"
 ```
 
 Create the `tree` with built-in functionalities of the libraries, such as `createTreeFromFile(const std::filesystem::path& file_path, Blackboard::Ptr blackboard)`, making sure it is allocated dynamically to memory and therefore witholding a `shared_ptr` to it.

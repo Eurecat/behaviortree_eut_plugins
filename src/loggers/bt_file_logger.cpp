@@ -1,6 +1,7 @@
-#include "behavior_tree_eut_plugins/loggers/bt_file_logger.h"
+#include "behaviortree_eut_plugins/loggers/bt_file_logger.h"
 
-#include "behavior_tree_eut_plugins/eut_debug.h"
+#include "behaviortree_eut_plugins/eut_utils.h"
+#include "behaviortree_eut_plugins/eut_debug.h"
 
 namespace BT
 {

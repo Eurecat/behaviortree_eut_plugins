@@ -6,7 +6,7 @@
 #include <array>
 #include "behaviortree_cpp/loggers/abstract_logger.h"
 
-#include "behavior_tree_eut_plugins/flatbuffers/bt_flatbuffer_helper_eut.h"
+#include "behaviortree_eut_plugins/flatbuffers/bt_flatbuffer_helper_eut.h"
 
 namespace BT
 {

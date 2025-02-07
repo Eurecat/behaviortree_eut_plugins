@@ -1,5 +1,7 @@
 #include <future>
-#include "behavior_tree_eut_plugins/loggers/bt_zmq_publisher.h"
+#include "behaviortree_eut_plugins/loggers/bt_zmq_publisher.h"
+
+#include "behaviortree_eut_plugins/eut_utils.h"
 
 #include "3rdparty/cppzmq/zmq.hpp"
 #include <boost/algorithm/string/replace.hpp>

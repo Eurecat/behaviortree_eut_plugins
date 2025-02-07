@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>behavior_tree_eut_plugins</name>
+  <name>behaviortree_eut_plugins</name>
   <version>0.0.1</version>
   <description>Eurecat developed plugins to exploit BT.CPPv4 PUBLIC library for customized edit, monitor and enhancing tools</description>
   <maintainer email="devis.dalmoro@eurecat.org">Devis Dal Moro</maintainer>

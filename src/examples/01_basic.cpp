@@ -8,10 +8,11 @@
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
-#include "behavior_tree_eut_plugins/eut_debug.h"
-#include "behavior_tree_eut_plugins/loggers/bt_zmq_publisher.h"
+#include "behaviortree_eut_plugins/eut_utils.h"
+#include "behaviortree_eut_plugins/eut_debug.h"
+#include "behaviortree_eut_plugins/loggers/bt_zmq_publisher.h"
 
-#include "behavior_tree_eut_plugins/loggers/bt_file_logger.h"
+#include "behaviortree_eut_plugins/loggers/bt_file_logger.h"
 
 
 class CrossDoor
@@ -157,7 +158,7 @@ public:
   {
     const auto testGetAsJson = BT::getPortValueAsJson(*this, "pos", BT::PortDirection::OUTPUT);
     if(testGetAsJson)
-      std::cout << "getInputAsJson: " << testGetAsJson.value().dump() << "\n" << std::flush;
+      std::cout << "getOutputAsJson: " << testGetAsJson.value().dump() << "\n" << std::flush;
     _pos.x += 0.2;
     _pos.y += 0.1;
     setOutput("pos", _pos);
@@ -285,7 +286,7 @@ int main()
   BT::RegisterJsonDefinition<Position2D>();
   
   // Get the share directory of the package
-  std::string package_share_dir = ament_index_cpp::get_package_share_directory("behavior_tree_eut_plugins");
+  std::string package_share_dir = ament_index_cpp::get_package_share_directory("behaviortree_eut_plugins");
 
   // Construct the path to the XML file
   std::string tree_file_path = package_share_dir + "/examples/trees/t1.xml";

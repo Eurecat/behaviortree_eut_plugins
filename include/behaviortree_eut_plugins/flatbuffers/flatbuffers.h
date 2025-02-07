@@ -17,8 +17,8 @@
 #ifndef FLATBUFFERS_H_
 #define FLATBUFFERS_H_
 
-#include "behavior_tree_eut_plugins/flatbuffers/base.h"
-#include "behavior_tree_eut_plugins/flatbuffers/stl_emulation.h"
+#include "behaviortree_eut_plugins/flatbuffers/base.h"
+#include "behaviortree_eut_plugins/flatbuffers/stl_emulation.h"
 
 #ifndef FLATBUFFERS_CPP98_STL
 #include <functional>

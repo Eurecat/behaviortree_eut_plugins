@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(behavior_tree_eut_plugins)
+project(behaviortree_eut_plugins)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,6 +21,7 @@ include_directories(
 ############### EUT Modifications ####################
 list(APPEND BT4_EUT_PLUGINS_SRC
     src/eut_basic_types.cpp
+    src/eut_utils.cpp
     src/eut_debug.cpp
     src/loggers/bt_file_logger.cpp
     src/loggers/bt_zmq_publisher.cpp

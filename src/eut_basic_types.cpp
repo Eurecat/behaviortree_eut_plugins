@@ -1,4 +1,4 @@
-#include "behavior_tree_eut_plugins/eut_basic_types.h"
+#include "behaviortree_eut_plugins/eut_basic_types.h"
 
 namespace BT
 {

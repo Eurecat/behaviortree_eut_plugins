@@ -2,8 +2,8 @@
 #define DEBUG_UTIL_H
 
 #include "behaviortree_cpp/basic_types.h"
-#include "behavior_tree_eut_plugins/eut_basic_types.h"
-#include "behavior_tree_eut_plugins/flatbuffers/bt_flatbuffer_helper_eut.h"
+#include "behaviortree_eut_plugins/eut_basic_types.h"
+#include "behaviortree_eut_plugins/flatbuffers/bt_flatbuffer_helper_eut.h"
 
 namespace BT
 {
@@ -85,17 +85,6 @@ namespace BT
 
     template <>
     [[nodiscard]] std::string toStr<BT::TickDebugPayload>(const BT::TickDebugPayload& body);
-    
-
-
-    nlohmann::json cleanJson(nlohmann::json& json);
-    
-    bool missingTypeInfo(const std::type_index& type);
-    Expected<std::string> getEntryAsString(const std::string& key,const BT::Blackboard::Ptr blackboard, const bool clean_json_output = false);
-
-    PortsValueMap getPortValuesMap(const BT::TreeNode& node, const PortDirection& dir, const bool clean_json_output = false);
-
-    Expected<nlohmann::json> getPortValueAsJson(const BT::TreeNode& node, const std::string& port_name, const BT::PortDirection dir = BT::PortDirection::INOUT);
     
 
     using DebugStatusChangeSignal = Signal<TimePoint, const TreeNode&, NodeAdvancedStatus, NodeAdvancedStatus>;

@@ -18,7 +18,7 @@
 #define FLATBUFFERS_STL_EMULATION_H_
 
 // clang-format off
-#include "behavior_tree_eut_plugins/flatbuffers/base.h"
+#include "behaviortree_eut_plugins/flatbuffers/base.h"
 
 #include <string>
 #include <type_traits>
