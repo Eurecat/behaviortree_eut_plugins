@@ -1,6 +1,6 @@
 #include "behaviortree_eut_plugins/loggers/bt_file_logger.h"
 
-#include "behaviortree_eut_plugins/eut_utils.h"
+#include "behaviortree_eut_plugins/utils/eut_utils.h"
 #include "behaviortree_eut_plugins/eut_debug.h"
 
 namespace BT
@@ -55,8 +55,8 @@ void FileLogger::callback(Duration timestamp, const TreeNode& node,
 
   SerializedTransitionMaps serialized_transition_maps = 
     SerializeTransitionMaps(node.UID(), timestamp, 
-      (prev_status != BT::NodeStatus::IDLE && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(node, PortDirection::INPUT, clean_output_)), 
-      (prev_status != BT::NodeStatus::IDLE && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(node, PortDirection::OUTPUT, clean_output_)), 
+      (prev_status != BT::NodeStatus::IDLE && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (BT::EutUtils::getPortValuesMap(node, PortDirection::INPUT, clean_output_)), 
+      (prev_status != BT::NodeStatus::IDLE && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (BT::EutUtils::getPortValuesMap(node, PortDirection::OUTPUT, clean_output_)), 
       /*node.getBlackboardValuesMap()*/{}); // TODO: review bb serialization protocol: for now avoid to send within the msg the entire BB dump: overkill and barely used on the other side
   
   // if(node.type() == BT::NodeType::SUBTREE)

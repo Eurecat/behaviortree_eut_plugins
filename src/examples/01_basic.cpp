@@ -8,7 +8,7 @@
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
-#include "behaviortree_eut_plugins/eut_utils.h"
+#include "behaviortree_eut_plugins/utils/eut_utils.h"
 #include "behaviortree_eut_plugins/eut_debug.h"
 #include "behaviortree_eut_plugins/loggers/bt_zmq_publisher.h"
 
@@ -156,7 +156,7 @@ public:
 
   BT::NodeStatus tick() override
   {
-    const auto testGetAsJson = BT::getPortValueAsJson(*this, "pos", BT::PortDirection::OUTPUT);
+    const auto testGetAsJson = BT::EutUtils::getPortValueAsJson(*this, "pos", BT::PortDirection::OUTPUT);
     if(testGetAsJson)
       std::cout << "getOutputAsJson: " << testGetAsJson.value().dump() << "\n" << std::flush;
     _pos.x += 0.2;
@@ -185,7 +185,7 @@ public:
   BT::NodeStatus tick() override
   { 
     std::cout << "\n\nLogString\n" << std::flush;
-    const auto testGetAsJson = BT::getPortValueAsJson(*this, "something", BT::PortDirection::INPUT);
+    const auto testGetAsJson = BT::EutUtils::getPortValueAsJson(*this, "something", BT::PortDirection::INPUT);
     if(testGetAsJson)
       std::cout << "getInputAsJson (something): " << testGetAsJson.value().dump() << " (json_type = " << testGetAsJson.value().type_name() << ") \n" << std::flush;
     bool fail = false;
@@ -233,7 +233,7 @@ public:
   BT::NodeStatus tick() override
   { 
     std::cout << "\n\nLogBool\n" << std::flush;
-    const auto testGetAsJson = BT::getPortValueAsJson(*this, "val");
+    const auto testGetAsJson = BT::EutUtils::getPortValueAsJson(*this, "val");
     if(testGetAsJson)
       std::cout << "LogBool getInputAsJson (val): " << testGetAsJson.value().dump() << " (json_type = " << testGetAsJson.value().type_name() << ") \n" << std::flush;
     bool fail = false;

@@ -1,9 +1,11 @@
-#include "behaviortree_eut_plugins/eut_utils.h"
+#include "behaviortree_eut_plugins/utils/eut_utils.h"
 
 
 #define JSON_TRUNC_STR_DIM 16
 
 namespace BT
+{
+namespace EutUtils
 {
     // bool missingTypeInfo(const std::type_index& type)
     // {
@@ -53,7 +55,7 @@ namespace BT
 
     Expected<nlohmann::json> eutToJson(const Any& any)
     {
-        return eutToJson(any, typeid(void));
+        return BT::EutUtils::eutToJson(any, typeid(void));
     }
 
     Expected<nlohmann::json> eutToJson(const Any& any, const std::type_index& type_info)
@@ -315,4 +317,5 @@ namespace BT
 
         return eutToJson(any_return, port_info.type());
     }
+}
 };

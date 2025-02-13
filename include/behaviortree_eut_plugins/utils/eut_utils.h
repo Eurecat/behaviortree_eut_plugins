@@ -8,6 +8,8 @@
 
 namespace BT
 {   
+namespace EutUtils
+{
 
     nlohmann::json lossyJsonCompress(nlohmann::json& json);
     
@@ -23,7 +25,7 @@ namespace BT
     Expected<nlohmann::json> eutToJson(const Any& any, const std::type_index & type_info);
     Expected<std::string> eutToJsonString(const std::string& key,const BT::Blackboard::Ptr blackboard);
     BT::JsonExporter::ExpectedEntry eutFromJson(const nlohmann::json& source);
-
+}
 };
 
 #endif

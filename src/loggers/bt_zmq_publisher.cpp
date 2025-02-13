@@ -1,7 +1,7 @@
 #include <future>
 #include "behaviortree_eut_plugins/loggers/bt_zmq_publisher.h"
 
-#include "behaviortree_eut_plugins/eut_utils.h"
+#include "behaviortree_eut_plugins/utils/eut_utils.h"
 
 #include "3rdparty/cppzmq/zmq.hpp"
 #include <boost/algorithm/string/replace.hpp>
@@ -365,8 +365,8 @@ void PublisherZMQ::debugCallback(Duration timestamp, const TreeNode& node, NodeA
   // don't send port value map when resetting a node that already completed its execution (success or failure), because you might retrieve updated values from the BB which are not used by the idle node
   SerializedTransitionMaps serialized_transition_maps = 
     SerializeTransitionMaps(node.UID(), timestamp, 
-      (isStatusCompleted(toNodeStatus(prev_status)) && status == BT::NodeAdvancedStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(node, PortDirection::INPUT, clean_output_)), 
-      (isStatusCompleted(toNodeStatus(prev_status)) && status == BT::NodeAdvancedStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(node, PortDirection::OUTPUT, clean_output_)), 
+      (isStatusCompleted(toNodeStatus(prev_status)) && status == BT::NodeAdvancedStatus::IDLE)? (BT::PortsValueMap{}) : (BT::EutUtils::getPortValuesMap(node, PortDirection::INPUT, clean_output_)), 
+      (isStatusCompleted(toNodeStatus(prev_status)) && status == BT::NodeAdvancedStatus::IDLE)? (BT::PortsValueMap{}) : (BT::EutUtils::getPortValuesMap(node, PortDirection::OUTPUT, clean_output_)), 
       /*node.getBlackboardValuesMap()*/{}); // TODO: review bb serialization protocol: for now avoid to send within the msg the entire BB dump: overkill and barely used on the other side
 
   updateTransitionBuffer(std::move(transition), std::move(serialized_transition_maps));
@@ -382,8 +382,8 @@ void PublisherZMQ::callback(Duration timestamp, const TreeNode& node,
   // don't send port value map when resetting a node that already completed its execution (success or failure), because you might retrieve updated values from the BB which are not used by the idle node
   SerializedTransitionMaps serialized_transition_maps = 
     SerializeTransitionMaps(node.UID(), timestamp, 
-      (isStatusCompleted(prev_status) && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(node, PortDirection::INPUT, clean_output_)), 
-      (isStatusCompleted(prev_status) && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (getPortValuesMap(node, PortDirection::OUTPUT, clean_output_)), 
+      (isStatusCompleted(prev_status) && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (BT::EutUtils::getPortValuesMap(node, PortDirection::INPUT, clean_output_)), 
+      (isStatusCompleted(prev_status) && status == BT::NodeStatus::IDLE)? (BT::PortsValueMap{}) : (BT::EutUtils::getPortValuesMap(node, PortDirection::OUTPUT, clean_output_)), 
       /*node.getBlackboardValuesMap()*/{}); // TODO: review bb serialization protocol: for now avoid to send within the msg the entire BB dump: overkill and barely used on the other side
 
   updateTransitionBuffer(std::move(transition), std::move(serialized_transition_maps));
