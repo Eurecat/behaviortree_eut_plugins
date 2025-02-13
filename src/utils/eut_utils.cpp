@@ -12,6 +12,25 @@ namespace EutUtils
     //     return type == typeid(BT::Any) || type == typeid(void); // TODO or AnyTypeAllowed??
     // }
 
+
+    std::unique_ptr<BT::PortInfo> getPortInfo(const BT::TreeNode& node, const std::string& port_name)
+    {
+        if(!node.config().manifest)
+        {
+            return nullptr;
+        }
+        else
+        {
+            // maybe it is declared with a default value in the manifest
+            auto port_manifest_it = node.config().manifest->ports.find(port_name);
+            if(port_manifest_it == node.config().manifest->ports.end())
+            {
+                return nullptr;
+            }
+            return std::make_unique<BT::PortInfo>(port_manifest_it->second.direction(), port_manifest_it->second.type(), port_manifest_it->second.converter());
+        }
+    }
+
     static
     void fixTypeMismatchJson(nlohmann::json& json, const std::type_index& info)
     {
@@ -61,9 +80,13 @@ namespace EutUtils
     Expected<nlohmann::json> eutToJson(const Any& any, const std::type_index& type_info)
     {
         nlohmann::json json;
-        // std::cout << "Any_return castedType = " << BT::demangle(any_return.castedType()) << 
-        //     " \t type = " << BT::demangle(any_return.type()) << "\n" << std::flush;
-        if(JsonExporter::get().toJson(any, json))
+        std::cout << "Any_return castedType = " << BT::demangle(any.castedType()) << 
+            " \t type = " << BT::demangle(any.type()) << "\n" << std::flush;
+        if(any.type() == typeid(nlohmann::json))
+        {
+            return any.cast<nlohmann::json>();
+        }
+        else if(JsonExporter::get().toJson(any, json))
         {
             fixTypeMismatchJson(json, type_info);
             return json;
@@ -92,7 +115,10 @@ namespace EutUtils
 
     BT::JsonExporter::ExpectedEntry eutFromJson(const nlohmann::json& source)
     {
-        return JsonExporter::get().fromJson(source);
+        BT::JsonExporter::ExpectedEntry expected_entry = JsonExporter::get().fromJson(source);
+        if(!expected_entry.has_value() && ( source.is_object() || source.is_array()))
+         return BT::JsonExporter::Entry{ BT::Any(source), BT::TypeInfo::Create<nlohmann::json>() };
+        return expected_entry;
     }
 
     Expected<std::string> getEntryAsString(const std::string& key, const BT::Blackboard::Ptr blackboard, const bool lossy_json_compress_output)
