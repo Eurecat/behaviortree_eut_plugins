@@ -44,14 +44,14 @@ namespace EutUtils
         {
             for (auto it = json.begin(); it != json.end(); ++it) 
             {
-                lossyJsonCompress(it.value());
+                *it = lossyJsonCompress(it.value());
             }
         } 
         else if (json.is_array()) 
         {
             for (auto& element : json) 
             {
-                lossyJsonCompress(element);
+                element = lossyJsonCompress(element);
             }
         } 
         else if (json.is_string()) 
@@ -77,18 +77,18 @@ namespace EutUtils
         return BT::EutUtils::eutToJson(any, typeid(void));
     }
 
-    Expected<nlohmann::json> eutToJson(const Any& any, const std::type_index& type_info)
+    Expected<nlohmann::json> eutToJson(const Any& any, const std::type_index& port_type_info)
     {
         nlohmann::json json;
         std::cout << "Any_return castedType = " << BT::demangle(any.castedType()) << 
             " \t type = " << BT::demangle(any.type()) << "\n" << std::flush;
         if(any.type() == typeid(nlohmann::json))
         {
-            return any.cast<nlohmann::json>();
+            return any.tryCast<nlohmann::json>();
         }
         else if(JsonExporter::get().toJson(any, json))
         {
-            fixTypeMismatchJson(json, type_info);
+            fixTypeMismatchJson(json, port_type_info);
             return json;
         }
         else
@@ -96,15 +96,18 @@ namespace EutUtils
     }
 
 
-    Expected<std::string> eutToJsonString(const std::string& key,const BT::Blackboard::Ptr blackboard)
+    Expected<std::string> eutToJsonString(const std::string& key,const BT::Blackboard::Ptr blackboard, const bool lossy_json_compress_output)
     {
         if(blackboard)
         {
             if(auto any_locked_ptr = blackboard->getAnyLocked(key))
             {   
                 BT::Any any; any_locked_ptr->copyInto(any);
-                if(const auto json_expected = eutToJson(any))
-                    return json_expected.value().dump();
+                if(auto json_expected = eutToJson(any))
+                {
+                    auto& json = json_expected.value();
+                    return lossy_json_compress_output? lossyJsonCompress(json).dump() : json.dump();
+                }
                 else
                     return nonstd::make_unexpected(json_expected.error());;
             }
@@ -141,35 +144,41 @@ namespace EutUtils
                 //TODO Devis // return bb_ptr->replaceKeysWithStringValues(val->value.cast<std::string>());
                 return val->value.cast<std::string>();
             
-            else if(!val->info.isStronglyTyped()) 
-            {
-                // if(val->value.isNumber())
-                {
-                    // treat special and known cases
-                    if(val->value.type() == typeid(int64_t))
-                        return std::to_string(val->value.cast<int64_t>());
-                    else if(val->value.type() == typeid(uint64_t))
-                        return std::to_string(val->value.cast<uint64_t>());
-                    else if(val->value.type() == typeid(double))
-                        return std::to_string(val->value.cast<double>());
+            // if(!val->info.isStronglyTyped()) 
+            // {
+            //     // if(val->value.isNumber())
+            //     {
+            //         // treat special and known cases
+            //         if(val->value.type() == typeid(int64_t))
+            //             return std::to_string(val->value.cast<int64_t>());
+            //         else if(val->value.type() == typeid(uint64_t))
+            //             return std::to_string(val->value.cast<uint64_t>());
+            //         else if(val->value.type() == typeid(double))
+            //             return std::to_string(val->value.cast<double>());
 
-                    else if(val->value.isType<nlohmann::json>()) // treat other special known and useful case
-                        return (val->value.cast<nlohmann::json>()).dump();
-                }
+            //         else if(val->value.isType<nlohmann::json>()) // treat other special known and useful case
+            //         {
+            //             nlohmann::json json = val->value.cast<nlohmann::json>();
+            //             return lossy_json_compress_output? lossyJsonCompress(json).dump() :  json.dump();
+            //         }
                 
-                try
-                {
-                    // everything else just to be considered as something to be stringified (or at least try...)
-                    return val->value.cast<std::string>();
-                }
-                catch(const std::runtime_error& re)
-                {
-                    return nonstd::make_unexpected(StrCat("Missing type info for key [",key,
-                    "] and does not appear to be a primitive known type ",
-                    "(number, string, json) ",
-                    "that can be automatically infer to string. Errors details: ", re.what()));
-                }
-            }
+            //     }
+                
+            //     try
+            //     {
+            //         // everything else just to be considered as something to be stringified through the json exporter
+            //         BT::Expected<nlohmann::json> json = eutToJson(val->value, val->value.type());
+            //         if(json.has_value())
+            //             return lossy_json_compress_output? lossyJsonCompress(json.value()).dump() : json.value().dump();
+            //     }
+            //     catch(const std::runtime_error& re)
+            //     {
+            //         return nonstd::make_unexpected(StrCat("Missing type info for key [",key,
+            //         "] and does not appear to be a primitive known type ",
+            //         "(number, string, json) ",
+            //         "that can be automatically infer to string. Errors details: ", re.what()));
+            //     }
+            // }
 
             else
             {
@@ -177,10 +186,9 @@ namespace EutUtils
                 // if(to_str_converter_it != string_converters.end())
                 // TODO Devis
                 // return bb_ptr->replaceKeysWithStringValues(val->port_info.toString(val->value));
-                nlohmann::json json;
-                if(val->info.type() == typeid(nlohmann::json)) json = val->value.tryCast<nlohmann::json>().value_or(nlohmann::json{});
-                if(!json.empty() || JsonExporter::get().toJson(val->value, json))
-                    return lossy_json_compress_output? lossyJsonCompress(json).dump() : json.dump();
+                BT::Expected<nlohmann::json> json = eutToJson(val->value, val->info.type());
+                if(json.has_value())
+                    return lossy_json_compress_output? lossyJsonCompress(json.value()).dump() : json.value().dump();
                 else
                     return nonstd::make_unexpected(StrCat("Type info for key [",key,
                         "] is " , val->info.typeName(),
