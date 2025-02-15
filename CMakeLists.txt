@@ -59,7 +59,7 @@ install(
 )
 
 # Build nodemodels library
-add_library(bt_eut_nodemodels_plugin SHARED src/plugins.cpp)
+add_library(bt_eut_nodemodels_plugin SHARED src/plugin.cpp)
 target_include_directories(bt_eut_nodemodels_plugin PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
