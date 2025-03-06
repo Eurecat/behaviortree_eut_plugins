@@ -1,7 +1,15 @@
 #include "behaviortree_cpp/bt_factory.h"
 
+#include "behaviortree_eut_plugins/eut_basic_types.h"
+#include "behaviortree_cpp/contrib/json.hpp"
+
+
+#include "behaviortree_eut_plugins/decorators/ForEachLoopNode.h"
+#include "behaviortree_eut_plugins/conditions/CheckEmptyJsonNode.h"
 #include "behaviortree_eut_plugins/actions/RandomValueNode.h"
 #include "behaviortree_eut_plugins/actions/AccessJsonFieldNode.h"
+#include "behaviortree_eut_plugins/actions/GetSizeNode.h"
+#include "behaviortree_eut_plugins/actions/ConcatenateStrings.h"
 
 // A custom struct  that I want to visualize in Groot
 struct Position2D
@@ -39,7 +47,7 @@ BT_JSON_CONVERTER(Position2D, pos)
 // Template specialization to converts a string to Position2D.
 namespace BT
 {
-    template <> inline Position2D convertFromString(StringView str)
+    template <> [[nodiscard]] Position2D convertFromString(StringView str)
     {
         // We expect real numbers separated by semicolons
         auto parts = splitString(str, ';');
@@ -52,6 +60,7 @@ namespace BT
             Position2D output{0.0,0.0};
             output.x     = convertFromString<double>(parts[0]);
             output.y     = convertFromString<double>(parts[1]);
+            // std::cout << "Building a position 2d object " << output.x << "; " << output.y << "\n" << std::flush;
             return output;
         }
     }
@@ -122,11 +131,24 @@ BT_REGISTER_NODES(factory)
 {
     factory.registerNodeType<BT::AccessJsonFieldNode>("AccessJsonField");
 
+    factory.registerNodeType<BT::ForEachLoopNode<nlohmann::json>>("ForEachLoopJson");
+  
     BT::RegisterJsonDefinition<Position2D>();
-    factory.registerNodeType<UpdatePosition>("UpdatePosition");
     factory.registerNodeType<FakeMoveBase>("FakeMoveBase");
+    factory.registerNodeType<UpdatePosition>("UpdatePosition");
 
     factory.registerNodeType<BT::RandomValueNode<int>>("RandomInt");
     factory.registerNodeType<BT::RandomValueNode<uint32_t>>("RandomUInt");
     factory.registerNodeType<BT::RandomValueNode<double>>("RandomDouble");
+
+
+    factory.registerNodeType<BT::ConcatenateStringsNode<2>>("ConcatenateStrings");
+    factory.registerNodeType<BT::ConcatenateStringsNode<3>>("Concatenate3Strings");
+
+
+    factory.registerNodeType<BT::GetSizeNode<nlohmann::json, size_t>>("GetJsonSize");
+    factory.registerNodeType<BT::GetSizeNode<nlohmann::json, uint32_t>>("GetJsonSizeUInt");
+
+
+    factory.registerNodeType<BT::CheckEmptyJson>("CheckEmptyJson");
 }
