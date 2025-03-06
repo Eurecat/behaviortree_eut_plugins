@@ -44,7 +44,7 @@ namespace EutUtils
     Expected<nlohmann::json> eutToJson(const Any& any);
     Expected<nlohmann::json> eutToJson(const Any& any, const std::type_index & port_type_info);
     Expected<std::string> eutToJsonString(const std::string& key,const BT::Blackboard::Ptr blackboard, const bool lossy_json_compress_output = false);
-    BT::JsonExporter::ExpectedEntry eutFromJson(const nlohmann::json& source);
+    BT::JsonExporter::ExpectedEntry eutFromJson(const nlohmann::json& source, const std::type_index type = typeid(BT::AnyTypeAllowed));
 }
 };
 

@@ -80,12 +80,16 @@ namespace EutUtils
     Expected<nlohmann::json> eutToJson(const Any& any, const std::type_index& port_type_info)
     {
         nlohmann::json json;
-        std::cout << "Any_return castedType = " << BT::demangle(any.castedType()) << 
-            " \t type = " << BT::demangle(any.type()) << "\n" << std::flush;
         if(any.type() == typeid(nlohmann::json))
         {
             return any.tryCast<nlohmann::json>();
         }
+
+        else if(!isStronglyTyped(any.type()) && any.isString())
+        {
+            return nlohmann::json{any.cast<std::string>()};
+        }
+
         else if(JsonExporter::get().toJson(any, json))
         {
             fixTypeMismatchJson(json, port_type_info);
@@ -103,7 +107,11 @@ namespace EutUtils
             if(auto any_locked_ptr = blackboard->getAnyLocked(key))
             {   
                 BT::Any any; any_locked_ptr->copyInto(any);
-                if(auto json_expected = eutToJson(any))
+                if(!isStronglyTyped(any.type()) && any.isString())
+                {
+                    return nlohmann::json{any.cast<std::string>()};
+                }
+                else if(auto json_expected = eutToJson(any))
                 {
                     auto& json = json_expected.value();
                     return lossy_json_compress_output? lossyJsonCompress(json).dump() : json.dump();
@@ -116,11 +124,71 @@ namespace EutUtils
         return nonstd::make_unexpected(StrCat("Missing entry for key [",key,"] while performing a eutToJsonString operation"));
     }
 
-    BT::JsonExporter::ExpectedEntry eutFromJson(const nlohmann::json& source)
+    BT::JsonExporter::ExpectedEntry eutFromJson(const nlohmann::json& source, const std::type_index type)
     {
         BT::JsonExporter::ExpectedEntry expected_entry = JsonExporter::get().fromJson(source);
         if(!expected_entry.has_value() && ( source.is_object() || source.is_array()))
          return BT::JsonExporter::Entry{ BT::Any(source), BT::TypeInfo::Create<nlohmann::json>() };
+        
+        if(expected_entry.has_value())
+        {
+            BT::JsonExporter::Entry& entry = expected_entry.value();
+            if(entry.second.type() != type)
+            {
+                //fix type inconsistency
+                if(source.is_number() && isNumberType(type))
+                {
+                    if(std::type_index(typeid(uint8_t)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<uint8_t>()), BT::TypeInfo::Create<uint8_t>() };
+                    }
+                    if(std::type_index(typeid(uint16_t)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<uint16_t>()), BT::TypeInfo::Create<uint16_t>() };
+                    }
+                    if(std::type_index(typeid(uint32_t)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<uint32_t>()), BT::TypeInfo::Create<uint32_t>() };
+                    }
+                    if(std::type_index(typeid(uint64_t)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<uint64_t>()), BT::TypeInfo::Create<uint64_t>() };
+                    }
+                    //------------
+                    if(std::type_index(typeid(int8_t)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<int8_t>()), BT::TypeInfo::Create<int8_t>() };
+                    }
+                    if(std::type_index(typeid(int16_t)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<int16_t>()), BT::TypeInfo::Create<int16_t>() };
+                    }
+                    if(std::type_index(typeid(int32_t)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<int32_t>()), BT::TypeInfo::Create<int32_t>() };
+                    }
+                    if(std::type_index(typeid(int64_t)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<int64_t>()), BT::TypeInfo::Create<int64_t>() };
+                    }
+                    //------------
+                    if(std::type_index(typeid(float)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<float>()), BT::TypeInfo::Create<float>() };
+                    }
+                    if(std::type_index(typeid(double)) == type)
+                    {
+                        return BT::JsonExporter::Entry{ BT::Any(source.get<double>()), BT::TypeInfo::Create<double>() };
+                    }
+                }
+
+                else if(BT::demangle(typeid(bool)) == BT::demangle(type) && source.is_number_integer())
+                {
+                    return BT::JsonExporter::Entry{ BT::Any(BT::convertFromString<bool>(source.dump())), BT::TypeInfo::Create<bool>() };
+                }
+            }   
+        }
+
         return expected_entry;
     }
 
@@ -317,7 +385,10 @@ namespace EutUtils
             {
                 try
                 {
-                    any_return = port_info.converter()(port_value_str);
+                    if(port_info.isStronglyTyped())
+                        any_return = port_info.converter()(port_value_str);
+                    else
+                        any_return = BT::Any(port_value_str);
                 }
                 catch(std::exception& ex)
                 {

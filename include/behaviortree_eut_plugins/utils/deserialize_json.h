@@ -95,7 +95,14 @@ namespace EutUtils
 
     inline void deserializeFieldToString(BT::ActionNodeBase& node, const std::string& port, const Json& field)
     {
-        node.setOutput<std::string>(port, field.get<std::string>());
+        std::string extracted = field.get<std::string>();
+        // std::cout << "deserializeFieldToString for " << port << " with value " << extracted << "\n" << std::flush;
+        if (!extracted.empty() && extracted.front() == '"' && extracted.back() == '"') 
+        {
+            extracted = extracted.substr(1, extracted.size() - 2);
+            // std::cout << "deserializeFieldToString for " << port << " with pp value " << extracted << "\n" << std::flush;
+        }
+        node.setOutput<std::string>(port, extracted);
     }
 
     inline void deserializeFieldToJson(BT::ActionNodeBase& node, const std::string& port, const Json& field)
