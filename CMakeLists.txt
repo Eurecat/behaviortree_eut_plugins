@@ -20,9 +20,10 @@ include_directories(
 
 ############### EUT Modifications ####################
 list(APPEND BT4_EUT_PLUGINS_SRC
-    src/utils/eut_basic_types.cpp
+    src/eut_basic_types.cpp
     src/utils/eut_utils.cpp
     src/eut_debug.cpp
+    src/eut_factory.cpp
     src/loggers/bt_file_logger.cpp
     src/loggers/bt_zmq_publisher.cpp
 )
@@ -59,7 +60,7 @@ install(
 )
 
 # Build nodemodels library
-add_library(bt_eut_nodemodels_plugin SHARED src/plugin.cpp)
+add_library(bt_eut_nodemodels_plugin SHARED src/plugin.cpp src/eut_basic_types.cpp)
 target_include_directories(bt_eut_nodemodels_plugin PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )

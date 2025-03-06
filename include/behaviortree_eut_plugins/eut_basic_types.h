@@ -1,6 +1,7 @@
 #ifndef EUT_BASIC_TYPES_H
 #define EUT_BASIC_TYPES_H
 
+#include <unordered_set>
 #include "behaviortree_cpp/basic_types.h"
 #include "behaviortree_cpp/contrib/json.hpp"
 
@@ -85,6 +86,9 @@ namespace BT
 
     template <>
         [[nodiscard]] std::string toStr<NodeAdvancedStatus>(const NodeAdvancedStatus& value);
+    
+    template <> 
+        [[nodiscard]] nlohmann::json convertFromString(StringView str);
 
     static inline NodeStatus toNodeStatus(NodeAdvancedStatus advanced_status)
     {
@@ -115,6 +119,59 @@ namespace BT
     };
 
     using NodeStatusVariant = std::variant<NodeStatus, NodeAdvancedStatus>;
+
+    static std::unordered_set<std::type_index> integral_types = 
+    {
+        (typeid(int64_t)),(typeid(uint64_t)),
+        (typeid(int32_t)),(typeid(uint32_t)),
+        (typeid(int16_t)),(typeid(uint16_t)),
+        (typeid(int8_t)),(typeid(uint8_t))
+    };
+
+    static std::unordered_set<std::type_index> floating_number_types = 
+    {(typeid(double)),(typeid(float))};
+
+
+    static std::unordered_set<std::string> integral_types_str = 
+    {
+        BT::demangle(typeid(int64_t)),BT::demangle(typeid(uint64_t)),
+        BT::demangle(typeid(int32_t)),BT::demangle(typeid(uint32_t)),
+        BT::demangle(typeid(int16_t)),BT::demangle(typeid(uint16_t)),
+        BT::demangle(typeid(int8_t)),BT::demangle(typeid(uint8_t))
+    };
+
+    static std::unordered_set<std::string> floating_number_types_str = 
+    {BT::demangle(typeid(double)),BT::demangle(typeid(float))};
+
+    inline bool isStronglyTyped(const std::type_index& type)
+    {
+        return type != (typeid(BT::AnyTypeAllowed)) && type != (typeid(BT::Any));
+    }
+
+    inline bool isNumberType(const std::type_index& type)
+    {
+        return integral_types.count(type) || floating_number_types.count(type);
+    }
+
+    inline bool isIntegralType(const std::type_index& type)
+    {
+        return integral_types.count(type);
+    }
+
+    inline bool isStronglyTyped(const std::string& type_name)
+    {
+        return type_name != BT::demangle(typeid(BT::AnyTypeAllowed)) && type_name != BT::demangle(typeid(BT::Any));
+    }
+
+    inline bool isNumberType(const std::string& type_name)
+    {
+        return integral_types_str.count(type_name) || floating_number_types_str.count(type_name);
+    }
+
+    inline bool isIntegralType(const std::string& type_name)
+    {
+        return integral_types_str.count(type_name);
+    }
 }
 
 #endif

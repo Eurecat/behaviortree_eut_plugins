@@ -100,4 +100,21 @@ namespace BT
         return "";
     }
 
+    template <> 
+        nlohmann::json convertFromString(StringView str)
+    {
+        if(str.empty())
+            return nlohmann::json{};
+        else 
+        {
+            try
+            {
+                return nlohmann::json::parse(str.data());
+            }
+            catch (const nlohmann::json::parse_error &e)
+            {
+                throw BT::RuntimeError("Failed to parse JSON: ", e.what());
+            }
+        }
+    }
 };
