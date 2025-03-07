@@ -13,7 +13,7 @@ class CheckEmptyJson final : public BT::ConditionNode
 
         static BT::PortsList providedPorts()
         {
-            std::cout << "CheckEmptyJson::providedPorts loading converter for type " << BT::demangle(typeid(nlohmann::json)) << "\n" << std::flush;
+            // std::cout << "CheckEmptyJson::providedPorts loading converter for type " << BT::demangle(typeid(nlohmann::json)) << "\n" << std::flush;
             return { BT::InputPort<nlohmann::json>("input", "Input json value") };
         }
 

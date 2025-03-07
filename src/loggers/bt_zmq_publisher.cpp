@@ -214,7 +214,7 @@ PublisherZMQ::PublisherZMQ(BT::DebuggableTree& debugTree, unsigned max_msg_per_s
           else
           {
             //received debug cmds, but tree is not in debug mode, so for now just discard them 
-            std::cout << "Here received " << received_data << std::flush << std::endl;
+            std::cout << "[PublisherZMQ] received " << received_data << std::flush << std::endl;
           }
         }
       }
