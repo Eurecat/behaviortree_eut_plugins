@@ -5,7 +5,28 @@ namespace BT
     template <>
     std::string toStr<Any>(const Any& value)
     {
-        return value.empty()? "" : value.cast<std::string>();
+        if (value.empty()) return "";
+
+        if (value.isString())
+            return value.cast<std::string>();
+        else if (value.isNumber())
+        {
+            if (value.isType<uint64_t>()) return BT::toStr(value.cast<uint64_t>());
+            else if (value.isType<int64_t>()) return BT::toStr(value.cast<int64_t>());
+            else if (value.isType<double>()) return BT::toStr(value.cast<double>());
+            else return ""; // treat unhandled case this way
+        }
+        else if (value.isType<bool>()) return BT::toStr(value.cast<bool>());
+        else if (value.isType<unsigned char>()) return BT::toStr(value.cast<unsigned char>());
+        else if (value.isType<char>()) return BT::toStr(value.cast<char>());
+        else if (value.isType<nlohmann::json>()) return BT::toStr(value.cast<nlohmann::json>());
+        else if (value.isType<std::vector<int>>()) return BT::toStr(value.cast<std::vector<int>>());
+        else if (value.isType<std::vector<double>>()) return BT::toStr(value.cast<std::vector<double>>());
+        else if (value.isType<std::vector<std::string>>()) return BT::toStr(value.cast<std::vector<std::string>>());
+        else if (value.isType<BT::NodeStatus>()) return BT::toStr(value.cast<BT::NodeStatus>());
+        else if (value.isType<BT::NodeAdvancedStatus>()) return BT::toStr(value.cast<BT::NodeAdvancedStatus>());
+
+        else return ""; // treat unhandled case this way
     }
 
     template <> 
