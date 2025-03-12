@@ -65,6 +65,7 @@ target_include_directories(bt_eut_nodemodels_plugin PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_compile_definitions(bt_eut_nodemodels_plugin PRIVATE  BT_PLUGIN_EXPORT )
+target_link_libraries(bt_eut_nodemodels_plugin ${PROJECT_NAME}_lib) 
 ament_target_dependencies(bt_eut_nodemodels_plugin behaviortree_cpp)
 
 install(TARGETS
@@ -73,6 +74,13 @@ install(TARGETS
   ARCHIVE DESTINATION share/${PROJECT_NAME}/bt_plugins
   RUNTIME DESTINATION share/${PROJECT_NAME}/bt_plugins
 )
+
+add_executable(bt_plugins_to_xml         src/tools/bt_plugins_to_xml.cpp )
+include_directories(${behaviortree_cpp_INCLUDE_DIRS})
+ament_target_dependencies(bt_plugins_to_xml behaviortree_cpp)
+# target_link_options(bt_plugins_to_xml PUBLIC -rdynamic)
+install(TARGETS bt_plugins_to_xml
+        DESTINATION lib/${PROJECT_NAME} )
 
 
 # Add an executable example (if any)
