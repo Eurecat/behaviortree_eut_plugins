@@ -59,28 +59,66 @@ install(
   DESTINATION include
 )
 
-# Build nodemodels library
-add_library(bt_eut_nodemodels_plugin SHARED src/plugin.cpp src/eut_basic_types.cpp)
-target_include_directories(bt_eut_nodemodels_plugin PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-target_compile_definitions(bt_eut_nodemodels_plugin PRIVATE  BT_PLUGIN_EXPORT )
-target_link_libraries(bt_eut_nodemodels_plugin ${PROJECT_NAME}_lib) 
-ament_target_dependencies(bt_eut_nodemodels_plugin behaviortree_cpp)
-
-install(TARGETS
-  bt_eut_nodemodels_plugin
-  LIBRARY DESTINATION share/${PROJECT_NAME}/bt_plugins
-  ARCHIVE DESTINATION share/${PROJECT_NAME}/bt_plugins
-  RUNTIME DESTINATION share/${PROJECT_NAME}/bt_plugins
+execute_process(
+    COMMAND bash -c "xmllint --xpath 'string(//description/plugins/@folder_path)' plugins_description.xml | awk '{print \$1\}'"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE PLUGINS_FOLDER_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+execute_process(
+    COMMAND bash -c "xmllint --xpath 'string(//description/palettes/@folder_path)' palettes_description.xml | awk '{print \$1\}'"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE PALETTES_FOLDER_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Executable to generate xml from .so plugin for "simple" bt plugins .so
 add_executable(bt_plugins_to_xml         src/tools/bt_plugins_to_xml.cpp )
 include_directories(${behaviortree_cpp_INCLUDE_DIRS})
 ament_target_dependencies(bt_plugins_to_xml behaviortree_cpp)
 # target_link_options(bt_plugins_to_xml PUBLIC -rdynamic)
 install(TARGETS bt_plugins_to_xml
         DESTINATION lib/${PROJECT_NAME} )
+
+
+# Build nodemodels library
+add_library(bt_${PROJECT_NAME}_nodemodels SHARED src/plugin.cpp src/eut_basic_types.cpp)
+target_include_directories(bt_${PROJECT_NAME}_nodemodels PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+target_compile_definitions(bt_${PROJECT_NAME}_nodemodels PRIVATE  BT_PLUGIN_EXPORT )
+target_link_libraries(bt_${PROJECT_NAME}_nodemodels ${PROJECT_NAME}_lib) 
+ament_target_dependencies(bt_${PROJECT_NAME}_nodemodels behaviortree_cpp)
+
+install(TARGETS
+  bt_${PROJECT_NAME}_nodemodels
+  LIBRARY DESTINATION share/${PROJECT_NAME}/${PLUGINS_FOLDER_PATH}
+  ARCHIVE DESTINATION share/${PROJECT_NAME}/${PLUGINS_FOLDER_PATH}
+  RUNTIME DESTINATION share/${PROJECT_NAME}/${PLUGINS_FOLDER_PATH}
+)
+
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/libbt_${PROJECT_NAME}_nodemodels.xml
+  COMMAND $<TARGET_FILE:bt_plugins_to_xml> 
+          $<TARGET_FILE:bt_${PROJECT_NAME}_nodemodels>
+          ${CMAKE_CURRENT_BINARY_DIR}/libbt_${PROJECT_NAME}_nodemodels.xml
+  DEPENDS bt_plugins_to_xml bt_${PROJECT_NAME}_nodemodels
+  COMMENT "Generating XML file from plugin .so"
+)
+
+add_custom_target(generate_xml ALL
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/libbt_${PROJECT_NAME}_nodemodels.xml
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libbt_${PROJECT_NAME}_nodemodels.xml
+        DESTINATION share/${PROJECT_NAME}/${PLUGINS_FOLDER_PATH})
+
+# "Install" palettes libraries
+install(
+  DIRECTORY palettes/
+  DESTINATION share/${PROJECT_NAME}/${PALETTES_FOLDER_PATH}
+)
 
 
 # Add an executable example (if any)
@@ -98,6 +136,24 @@ install(
 install(
   TARGETS 01_basic_example
   DESTINATION lib/${PROJECT_NAME}
+)
+
+# Register the plugin description file as a resource
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/plugins_description.xml
+               ${CMAKE_CURRENT_BINARY_DIR}/plugins_description.xml COPYONLY)
+
+ament_index_register_resource(
+  "behavior_tree_plugin"
+  CONTENT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/plugins_description.xml"
+)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/palettes_description.xml
+               ${CMAKE_CURRENT_BINARY_DIR}/palettes_description.xml COPYONLY)
+
+# Register the palette description file as a resource
+ament_index_register_resource(
+  "behavior_tree_palette"
+  CONTENT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/palettes_description.xml"
 )
 
 # Export the package

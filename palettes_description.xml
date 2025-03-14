@@ -1,0 +1,8 @@
+<description>
+    <palettes name="behaviortree_eut_plugins_palettes"
+	    folder_path="bt_palettes"
+	    description="Behavior Tree Eurecat palettes models" />
+	<palettes name="behaviortree_eut_plugins_nodemodels"
+	    folder_path="bt_plugins"
+	    description="Behavior Tree Eurecat node models" />
+</description>

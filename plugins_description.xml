@@ -1,0 +1,5 @@
+<description>
+    <plugins name="behaviortree_eut_plugins"
+	    folder_path="bt_plugins"
+	    description="Behavior Tree Eurecat node models" />
+</description>

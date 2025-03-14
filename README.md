@@ -9,7 +9,13 @@ Behavior Trees implemented with the [BehaviorTree.CPP](https://github.com/Behavi
 
 ## How to compile it (ROS2)
 
-At the moment the package compiles and has been tested with **ROS2 humble**, therefore compile using `colcon build`(ROS2) and making sure public [BehaviorTree.CPP v4.6+](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/4.6.2) has been compiled and/or sourced correctly in the workspace.
+At the moment the package compiles and has been tested with **ROS2 humble**, therefore compile using `colcon build`(ROS2) and making sure public [BehaviorTree.CPP v4.6+](https://github.com/BehaviorTree/BehaviorTree.CPP/tree/4.6.2) has been compiled and/or sourced correctly in the workspace. 
+
+Furthermore, make sure `xmllint` is installed.
+
+```
+apt -y install libxml2-utils
+```
 
 ## How to use it (ROS2)
 

@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+    <include ros_pkg="behaviortree_eut_plugins" path="bt_plugins/libbt_behaviortree_eut_plugins_nodemodels.xml" />
+</root>
