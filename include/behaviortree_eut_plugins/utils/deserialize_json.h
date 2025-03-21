@@ -2,7 +2,7 @@
 #define JSON_DESERIALIZATION
 
 #include <functional>
-#include <behaviortree_cpp/action_node.h>
+#include <behaviortree_cpp/tree_node.h>
 
 #include "behaviortree_cpp/contrib/json.hpp"
 #include "behaviortree_eut_plugins/utils/eut_utils.h"
@@ -12,9 +12,9 @@ namespace BT
 namespace EutUtils
 {
     using Json = nlohmann::json;
-    using DeserializeFieldFunction = std::function<void(BT::ActionNodeBase&, const std::string&, const Json&)>;
+    using DeserializeFieldFunction = std::function<void(BT::TreeNode&, const std::string&, const Json&)>;
 
-    void deserializeFieldToSignedInt(BT::ActionNodeBase& node, const std::string& port, const Json& field)
+    void deserializeFieldToSignedInt(BT::TreeNode& node, const std::string& port, const Json& field)
     {
         const auto port_info_ptr = getPortInfo(node, port);
         
@@ -46,7 +46,7 @@ namespace EutUtils
     
     }
 
-    void deserializeFieldToUnsignedInt(BT::ActionNodeBase& node, const std::string& port, const Json& field)
+    void deserializeFieldToUnsignedInt(BT::TreeNode& node, const std::string& port, const Json& field)
     {
         const auto port_info_ptr = getPortInfo(node, port);
         
@@ -76,7 +76,7 @@ namespace EutUtils
     
     }
 
-    void deserializeFieldToDouble(BT::ActionNodeBase& node, const std::string& port, const Json& field)
+    void deserializeFieldToDouble(BT::TreeNode& node, const std::string& port, const Json& field)
     {
         const auto port_info_ptr = getPortInfo(node, port);
 
@@ -88,12 +88,12 @@ namespace EutUtils
             node.setOutput(port, field.get<double>());
     }
 
-    inline void deserializeFieldToBool(BT::ActionNodeBase& node, const std::string& port, const Json& field)
+    inline void deserializeFieldToBool(BT::TreeNode& node, const std::string& port, const Json& field)
     {
         node.setOutput<bool>(port, field.get<bool>());
     }
 
-    inline void deserializeFieldToString(BT::ActionNodeBase& node, const std::string& port, const Json& field)
+    inline void deserializeFieldToString(BT::TreeNode& node, const std::string& port, const Json& field)
     {
         std::string extracted = field.get<std::string>();
         // std::cout << "deserializeFieldToString for " << port << " with value " << extracted << "\n" << std::flush;
@@ -105,7 +105,7 @@ namespace EutUtils
         node.setOutput<std::string>(port, extracted);
     }
 
-    inline void deserializeFieldToJson(BT::ActionNodeBase& node, const std::string& port, const Json& field)
+    inline void deserializeFieldToJson(BT::TreeNode& node, const std::string& port, const Json& field)
     {
         node.setOutput<Json>(port, field);
     }
@@ -121,7 +121,7 @@ namespace EutUtils
         { Json::value_t::array,           [] (auto& node, const auto& port, const auto& field) { deserializeFieldToJson(node, port, field);        }},
     };
 
-    inline void deserializeField(BT::ActionNodeBase& node, const std::string& port, const Json& field)
+    inline void deserializeField(BT::TreeNode& node, const std::string& port, const Json& field)
     {
         deserialize_field_map.at(field.type())(node, port, field);
     }
