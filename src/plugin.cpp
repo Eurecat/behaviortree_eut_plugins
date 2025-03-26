@@ -6,7 +6,10 @@
 
 #include "behaviortree_eut_plugins/decorators/ForEachLoopNode.h"
 #include "behaviortree_eut_plugins/conditions/CheckEmptyJsonNode.h"
+#include "behaviortree_eut_plugins/conditions/CheckBoolNode.h"
+#include "behaviortree_eut_plugins/conditions/ComparisonNode.h"
 #include "behaviortree_eut_plugins/actions/RandomValueNode.h"
+#include "behaviortree_eut_plugins/actions/RandomSequenceValueNode.h"
 #include "behaviortree_eut_plugins/actions/AccessJsonFieldNode.h"
 #include "behaviortree_eut_plugins/actions/GetSizeNode.h"
 #include "behaviortree_eut_plugins/actions/ConcatenateStrings.h"
@@ -140,7 +143,7 @@ BT_REGISTER_NODES(factory)
     factory.registerNodeType<BT::RandomValueNode<int>>("RandomInt");
     factory.registerNodeType<BT::RandomValueNode<uint32_t>>("RandomUInt");
     factory.registerNodeType<BT::RandomValueNode<double>>("RandomDouble");
-
+    factory.registerNodeType<BT::RandomizeSequenceNode>("RandomSequenceValue");
 
     factory.registerNodeType<BT::ConcatenateStringsNode<2>>("ConcatenateStrings");
     factory.registerNodeType<BT::ConcatenateStringsNode<3>>("Concatenate3Strings");
@@ -151,4 +154,14 @@ BT_REGISTER_NODES(factory)
 
 
     factory.registerNodeType<BT::CheckEmptyJson>("CheckEmptyJson");
+    factory.registerNodeType<BT::CheckBoolNode>("CheckBool");
+
+    factory.registerNodeType<BT::ComparisonNode<int16_t>>("CompareShort");
+    factory.registerNodeType<BT::ComparisonNode<int32_t>>("CompareInt");
+    factory.registerNodeType<BT::ComparisonNode<int64_t>>("CompareLong");
+    factory.registerNodeType<BT::ComparisonNode<uint16_t>>("CompareUShort");
+    factory.registerNodeType<BT::ComparisonNode<uint32_t>>("CompareUInt");
+    factory.registerNodeType<BT::ComparisonNode<uint64_t>>("CompareULong");
+    factory.registerNodeType<BT::ComparisonNode<double>>("CompareNumbers");
+    factory.registerNodeType<BT::ComparisonNode<std::string>>("CompareStrings");
 }
