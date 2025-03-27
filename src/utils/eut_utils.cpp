@@ -34,8 +34,46 @@ namespace EutUtils
     static
     void fixTypeMismatchJson(nlohmann::json& json, const std::type_index& info)
     {
-        if(info == typeid(bool))
-            json = BT::convertFromString<bool>(json.dump());
+        std::string cleaned_str;
+        if(json.type() == nlohmann::json_abi_v3_11_3::detail::value_t::string)
+        {
+            if(BT::isNumberType(info) || info == typeid(bool))
+            {
+                std::string str = json.get<std::string>();
+                // Trim enclosing quotes if present
+                if ((str.front() == '"' && str.back() == '"') || (str.front() == '\'' && str.back() == '\''))
+                {
+                    if (str.length() >= 2)
+                        cleaned_str = str.substr(1, str.length() - 2);
+                }
+                else
+                {
+                    cleaned_str = str;
+                }
+            }
+        }
+
+        if(!cleaned_str.empty())
+        {
+            try 
+            {
+                if (info == typeid(bool)) { json = BT::convertFromString<bool>(cleaned_str);}
+                else if (info == typeid(int64_t)) { json = BT::convertFromString<int64_t>(cleaned_str);}
+                else if (info == typeid(uint64_t)) { json = BT::convertFromString<uint64_t>(cleaned_str);}
+                else if (info == typeid(int32_t)) { json = BT::convertFromString<int32_t>(cleaned_str);}
+                else if (info == typeid(uint32_t)) { json = BT::convertFromString<uint32_t>(cleaned_str);}
+                else if (info == typeid(int16_t)) { json = BT::convertFromString<int16_t>(cleaned_str);}
+                else if (info == typeid(uint16_t)) { json = BT::convertFromString<uint16_t>(cleaned_str);}
+                else if (info == typeid(int8_t)) { json = BT::convertFromString<int8_t>(cleaned_str);}
+                else if (info == typeid(uint8_t)) { json = BT::convertFromString<uint8_t>(cleaned_str);}
+                else if (info == typeid(float)) { json = BT::convertFromString<float>(cleaned_str);}
+                else if (info == typeid(double)) { json = BT::convertFromString<double>(cleaned_str);}
+            } 
+            catch (const std::exception& e) 
+            {
+                // Optionally log or handle conversion error
+            }
+        }
     }
 
     nlohmann::json lossyJsonCompress(nlohmann::json& json)
