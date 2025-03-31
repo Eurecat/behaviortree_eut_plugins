@@ -11,6 +11,8 @@
 #include "behaviortree_eut_plugins/actions/RandomValueNode.h"
 #include "behaviortree_eut_plugins/actions/RandomSequenceValueNode.h"
 #include "behaviortree_eut_plugins/actions/AccessJsonFieldNode.h"
+#include "behaviortree_eut_plugins/actions/AddKeyValueToJson.h"
+#include "behaviortree_eut_plugins/actions/InitializeNode.h"
 #include "behaviortree_eut_plugins/actions/GetSizeNode.h"
 #include "behaviortree_eut_plugins/actions/ConcatenateStrings.h"
 
@@ -151,11 +153,13 @@ BT_REGISTER_NODES(factory)
 
     factory.registerNodeType<BT::GetSizeNode<nlohmann::json, size_t>>("GetJsonSize");
     factory.registerNodeType<BT::GetSizeNode<nlohmann::json, uint32_t>>("GetJsonSizeUInt");
-
+    factory.registerNodeType<BT::AddKeyValueToJson>("AddKeyValueToJson");
+    factory.registerNodeType<BT::InitializeNode<nlohmann::json>>("InitializeJson");
 
     factory.registerNodeType<BT::CheckEmptyJson>("CheckEmptyJson");
     factory.registerNodeType<BT::CheckBoolNode>("CheckBool");
 
+    factory.registerNodeType<BT::ComparisonNode<bool>>("CompareBool");
     factory.registerNodeType<BT::ComparisonNode<int16_t>>("CompareShort");
     factory.registerNodeType<BT::ComparisonNode<int32_t>>("CompareInt");
     factory.registerNodeType<BT::ComparisonNode<int64_t>>("CompareLong");
