@@ -11,7 +11,10 @@
 #include "behaviortree_eut_plugins/actions/RandomValueNode.h"
 #include "behaviortree_eut_plugins/actions/RandomSequenceValueNode.h"
 #include "behaviortree_eut_plugins/actions/AccessJsonFieldNode.h"
+#include "behaviortree_eut_plugins/actions/SplitStringToJsonArray.h"
+#include "behaviortree_eut_plugins/actions/AddArrayToNode.h"
 #include "behaviortree_eut_plugins/actions/AddKeyValueToJson.h"
+#include "behaviortree_eut_plugins/actions/ConvertJsonToNode.h"
 #include "behaviortree_eut_plugins/actions/InitializeNode.h"
 #include "behaviortree_eut_plugins/actions/GetSizeNode.h"
 #include "behaviortree_eut_plugins/actions/ConcatenateStrings.h"
@@ -149,13 +152,24 @@ BT_REGISTER_NODES(factory)
 
     factory.registerNodeType<BT::ConcatenateStringsNode<2>>("ConcatenateStrings");
     factory.registerNodeType<BT::ConcatenateStringsNode<3>>("Concatenate3Strings");
+    factory.registerNodeType<BT::ConcatenateStringsNode<4>>("Concatenate4Strings");
+    factory.registerNodeType<BT::ConcatenateStringsNode<5>>("Concatenate5Strings");
 
+    factory.registerNodeType<BT::ConvertJsonToNode<std::string>>("ConvertJsonToString");
+    factory.registerNodeType<BT::ConvertJsonToNode<double>>("ConvertJsonToDouble");
+    factory.registerNodeType<BT::ConvertJsonToNode<int16_t>>("ConvertJsonToShort");
+    factory.registerNodeType<BT::ConvertJsonToNode<int32_t>>("ConvertJsonToInt32");
+    factory.registerNodeType<BT::ConvertJsonToNode<int64_t>>("ConvertJsonToLong");
+    factory.registerNodeType<BT::ConvertJsonToNode<uint16_t>>("ConvertJsonToUShort");
+    factory.registerNodeType<BT::ConvertJsonToNode<uint32_t>>("ConvertJsonToUInt32");
+    factory.registerNodeType<BT::ConvertJsonToNode<uint64_t>>("ConvertJsonToULong");
 
     factory.registerNodeType<BT::GetSizeNode<nlohmann::json, size_t>>("GetJsonSize");
     factory.registerNodeType<BT::GetSizeNode<nlohmann::json, uint32_t>>("GetJsonSizeUInt");
     factory.registerNodeType<BT::AddKeyValueToJson>("AddKeyValueToJson");
     factory.registerNodeType<BT::InitializeNode<nlohmann::json>>("InitializeJson");
-
+    factory.registerNodeType<BT::AddArrayToJson>("AddArrayToJson");
+    factory.registerNodeType<BT::SplitStringToJsonArray>("SplitStringToJsonArray");
     factory.registerNodeType<BT::CheckEmptyJson>("CheckEmptyJson");
     factory.registerNodeType<BT::CheckBoolNode>("CheckBool");
 
