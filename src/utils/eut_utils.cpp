@@ -142,16 +142,19 @@ namespace EutUtils
     {
         if(blackboard)
         {
+            const auto entry_ptr = blackboard->getEntry(key);
+            bool entry_strongly_typed = entry_ptr && entry_ptr->info.isStronglyTyped();
             if(auto any_locked_ptr = blackboard->getAnyLocked(key))
             {   
                 BT::Any any; any_locked_ptr->copyInto(any);
-                if(!isStronglyTyped(any.type()) && any.isString())
+                if(!entry_strongly_typed && any.isString())
                 {
-                    return nlohmann::json{any.cast<std::string>()};
+                    return /*nlohmann::json*/{any.cast<std::string>()};
                 }
                 else if(auto json_expected = eutToJson(any))
                 {
                     auto& json = json_expected.value();
+                    
                     return lossy_json_compress_output? lossyJsonCompress(json).dump() : json.dump();
                 }
                 else
