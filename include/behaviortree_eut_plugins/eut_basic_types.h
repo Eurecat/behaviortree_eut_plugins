@@ -160,7 +160,8 @@ namespace BT
 
     inline bool isStronglyTyped(const std::string& type_name)
     {
-        return type_name != BT::demangle(typeid(BT::AnyTypeAllowed)) && type_name != BT::demangle(typeid(BT::Any));
+        return type_name != "AnyTypeAllowed" && 
+                type_name != BT::demangle(typeid(BT::AnyTypeAllowed)) && type_name != BT::demangle(typeid(BT::Any));
     }
 
     inline bool isNumberType(const std::string& type_name)
