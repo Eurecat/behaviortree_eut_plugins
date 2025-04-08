@@ -18,6 +18,7 @@
 #include "behaviortree_eut_plugins/actions/InitializeNode.h"
 #include "behaviortree_eut_plugins/actions/GetSizeNode.h"
 #include "behaviortree_eut_plugins/actions/ConcatenateStrings.h"
+#include "behaviortree_eut_plugins/actions/SetBlackboardEutNode.h"
 
 // A custom struct  that I want to visualize in Groot
 struct Position2D
@@ -72,6 +73,11 @@ namespace BT
             return output;
         }
     }
+
+    template <> [[nodiscard]] std::string toStr<Position2D>(const Position2D& value)
+    {
+       return std::to_string(value.x) + ";" + std::to_string(value.y);
+    }
 } // end namespace BT
 
 // Simple Action that updates an instance of Position2D in the blackboard
@@ -98,7 +104,7 @@ public:
   static BT::PortsList providedPorts()
   {
     return { 
-        BT::InputPort<Position2D>("pos_in"),
+        BT::InputPort<Position2D>("pos_in", {0.0, 0.0}, "Initial position"),
         BT::InputPort<double>("x"),
         BT::InputPort<double>("y"), 
         BT::OutputPort<Position2D>("pos_out") 
@@ -144,6 +150,8 @@ BT_REGISTER_NODES(factory)
     BT::RegisterJsonDefinition<Position2D>();
     factory.registerNodeType<FakeMoveBase>("FakeMoveBase");
     factory.registerNodeType<UpdatePosition>("UpdatePosition");
+
+    factory.registerNodeType<BT::SetBlackboardEutNode>("SetBlackboardEut");
 
     factory.registerNodeType<BT::RandomValueNode<int>>("RandomInt");
     factory.registerNodeType<BT::RandomValueNode<uint32_t>>("RandomUInt");
