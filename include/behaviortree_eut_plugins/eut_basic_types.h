@@ -173,6 +173,11 @@ namespace BT
     {
         return integral_types_str.count(type_name);
     }
+
+    inline std::string polishedTypeName(const std::string& type_name)
+    {
+        return type_name.rfind("nlohmann::json", 0) == std::string::npos ? type_name : "nlohmann::json" ;
+    }
 }
 
 #endif
