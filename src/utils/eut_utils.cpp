@@ -34,6 +34,14 @@ namespace EutUtils
     static
     void fixTypeMismatchJson(nlohmann::json& json, const std::type_index& info)
     {
+        // number case, but it's a bool
+        if(json.is_number() && info == typeid(bool))
+        {
+            json = json.get<uint8_t>() != 0;
+            return;
+        }
+
+        // string case, but it's a number or boolean
         std::string cleaned_str;
         if(json.type() == nlohmann::json_abi_v3_11_3::detail::value_t::string)
         {
@@ -376,7 +384,7 @@ namespace EutUtils
         
         if(!node.config().manifest)
         {
-            return nonstd::make_unexpected(StrCat("getInputAsJson() of node '", node.fullPath(),
+            return nonstd::make_unexpected(StrCat("getPortValueAsJson() of node '", node.fullPath(),
                                                 "' failed because the manifest is "
                                                 "nullptr (WTF?) and the key: [",
                                                 key, "] is missing"));
@@ -386,7 +394,7 @@ namespace EutUtils
         auto port_manifest_it = node.config().manifest->ports.find(key);
         if(port_manifest_it == node.config().manifest->ports.end())
         {
-            return nonstd::make_unexpected(StrCat("getInputAsJson() of node '", node.fullPath(),
+            return nonstd::make_unexpected(StrCat("getPortValueAsJson() of node '", node.fullPath(),
                                                 "' failed because the manifest doesn't "
                                                 "contain the key: [",
                                                 key, "]"));
@@ -407,7 +415,7 @@ namespace EutUtils
             // there is a default value
             if(port_info.defaultValue().empty())
             {
-                return nonstd::make_unexpected(StrCat("getInputAsJson() of node '", node.fullPath(),
+                return nonstd::make_unexpected(StrCat("getPortValueAsJson() of node '", node.fullPath(),
                                                     "' failed because nor the manifest or the "
                                                     "XML contain the key: [",
                                                     key, "]"));
@@ -437,7 +445,7 @@ namespace EutUtils
                 }
                 catch(std::exception& ex)
                 {
-                    return nonstd::make_unexpected(StrCat("getInputAsJson(): ", ex.what()));
+                    return nonstd::make_unexpected(StrCat("getPortValueAsJson(): ", ex.what()));
                 }
             }
             else
@@ -446,7 +454,7 @@ namespace EutUtils
 
                 if(!node.config().blackboard)
                 {
-                    return nonstd::make_unexpected("getInputAsJson(): trying to access "
+                    return nonstd::make_unexpected("getPortValueAsJson(): trying to access "
                                                 "an invalid Blackboard");
                 }
 
@@ -455,7 +463,7 @@ namespace EutUtils
                     any_ptr->copyInto(any_return);
 
                 else
-                    return nonstd::make_unexpected(StrCat("getInputAsJson() failed because it was unable to "
+                    return nonstd::make_unexpected(StrCat("getPortValueAsJson() failed because it was unable to "
                                                     "find the key [",
                                                     key, "] remapped to [", blackboard_key, "]"));
             }
