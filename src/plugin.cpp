@@ -4,6 +4,7 @@
 #include "behaviortree_cpp/contrib/json.hpp"
 
 
+#include "behaviortree_eut_plugins/decorators/BlackboardCheckPrecondition.h"
 #include "behaviortree_eut_plugins/decorators/ForEachLoopNode.h"
 #include "behaviortree_eut_plugins/conditions/CheckEmptyJsonNode.h"
 #include "behaviortree_eut_plugins/conditions/CheckBoolNode.h"
@@ -158,20 +159,16 @@ BT_REGISTER_NODES(factory)
     factory.registerNodeType<BT::RandomValueNode<double>>("RandomDouble");
     factory.registerNodeType<BT::RandomizeSequenceNode>("RandomSequenceValue");
 
-    factory.registerNodeType<BT::ConcatenateStringsNode<2>>("ConcatenateStrings");
-    factory.registerNodeType<BT::ConcatenateStringsNode<3>>("Concatenate3Strings");
-    factory.registerNodeType<BT::ConcatenateStringsNode<4>>("Concatenate4Strings");
-    factory.registerNodeType<BT::ConcatenateStringsNode<5>>("Concatenate5Strings");
-
-    factory.registerNodeType<BT::ConvertJsonToNode<std::string>>("ConvertJsonToString");
-    factory.registerNodeType<BT::ConvertJsonToNode<double>>("ConvertJsonToDouble");
-    factory.registerNodeType<BT::ConvertJsonToNode<int16_t>>("ConvertJsonToShort");
-    factory.registerNodeType<BT::ConvertJsonToNode<int32_t>>("ConvertJsonToInt32");
-    factory.registerNodeType<BT::ConvertJsonToNode<int64_t>>("ConvertJsonToLong");
-    factory.registerNodeType<BT::ConvertJsonToNode<uint16_t>>("ConvertJsonToUShort");
-    factory.registerNodeType<BT::ConvertJsonToNode<uint32_t>>("ConvertJsonToUInt32");
-    factory.registerNodeType<BT::ConvertJsonToNode<uint64_t>>("ConvertJsonToULong");
-
+    // All of this nodes are not needed anymore, AccessJsonFiel shall be used
+    // factory.registerNodeType<BT::ConvertJsonToNode<std::string>>("ConvertJsonToString");
+    // factory.registerNodeType<BT::ConvertJsonToNode<double>>("ConvertJsonToDouble");
+    // factory.registerNodeType<BT::ConvertJsonToNode<int16_t>>("ConvertJsonToShort");
+    // factory.registerNodeType<BT::ConvertJsonToNode<int32_t>>("ConvertJsonToInt32");
+    // factory.registerNodeType<BT::ConvertJsonToNode<int64_t>>("ConvertJsonToLong");
+    // factory.registerNodeType<BT::ConvertJsonToNode<uint16_t>>("ConvertJsonToUShort");
+    // factory.registerNodeType<BT::ConvertJsonToNode<uint32_t>>("ConvertJsonToUInt32");
+    // factory.registerNodeType<BT::ConvertJsonToNode<uint64_t>>("ConvertJsonToULong");
+    
     factory.registerNodeType<BT::GetSizeNode<nlohmann::json, size_t>>("GetJsonSize");
     factory.registerNodeType<BT::GetSizeNode<nlohmann::json, uint32_t>>("GetJsonSizeUInt");
     factory.registerNodeType<BT::AddKeyValueToJson>("AddKeyValueToJson");
@@ -180,6 +177,15 @@ BT_REGISTER_NODES(factory)
     factory.registerNodeType<BT::SplitStringToJsonArray>("SplitStringToJsonArray");
     factory.registerNodeType<BT::CheckEmptyJson>("CheckEmptyJson");
     factory.registerNodeType<BT::CheckBoolNode>("CheckBool");
+    
+    // ALL of the following plugins are used temporarily to facilitate migration of old trees using bt_cppv3 
+    // and taking leverage of these to compensate for missing scripting capabilities
+    // shall be replaced directly with scripting in the near future
+
+    factory.registerNodeType<BT::ConcatenateStringsNode<2>>("ConcatenateStrings");
+    factory.registerNodeType<BT::ConcatenateStringsNode<3>>("Concatenate3Strings");
+    factory.registerNodeType<BT::ConcatenateStringsNode<4>>("Concatenate4Strings");
+    factory.registerNodeType<BT::ConcatenateStringsNode<5>>("Concatenate5Strings");
 
     factory.registerNodeType<BT::ComparisonNode<bool>>("CompareBool");
     factory.registerNodeType<BT::ComparisonNode<int16_t>>("CompareShort");
@@ -190,4 +196,14 @@ BT_REGISTER_NODES(factory)
     factory.registerNodeType<BT::ComparisonNode<uint64_t>>("CompareULong");
     factory.registerNodeType<BT::ComparisonNode<double>>("CompareNumbers");
     factory.registerNodeType<BT::ComparisonNode<std::string>>("CompareStrings");
+
+    factory.registerNodeType<BT::BlackboardPreconditionNode<uint16_t>>("BlackboardCheckUShort");
+    factory.registerNodeType<BT::BlackboardPreconditionNode<uint32_t>>("BlackboardCheckUInt");
+    factory.registerNodeType<BT::BlackboardPreconditionNode<uint64_t>>("BlackboardCheckULong");
+    factory.registerNodeType<BT::BlackboardPreconditionNode<int16_t>>("BlackboardCheckShort");
+    factory.registerNodeType<BT::BlackboardPreconditionNode<int32_t>>("BlackboardCheckInt");
+    factory.registerNodeType<BT::BlackboardPreconditionNode<int64_t>>("BlackboardCheckLong");
+    factory.registerNodeType<BT::BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
+    factory.registerNodeType<BT::BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
+    factory.registerNodeType<BT::BlackboardPreconditionNode<bool>>("BlackboardCheckBool");
 }
