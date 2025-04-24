@@ -43,10 +43,16 @@ private:
     std::string output_key;
     if(!getInput("output_key", output_key))
     {
-      throw RuntimeError("missing port [output_key]");
+      throw RuntimeError("SetBlackboardEut: missing port [output_key]");
     }
 
-    const std::string value_str = config().input_ports.at("value");
+    auto value_str_it = config().input_ports.find("value");
+    if(value_str_it == config().input_ports.end())
+    {
+      throw RuntimeError("SetBlackboardEut: missing port [value]");
+    }
+
+    const std::string value_str = value_str_it->second;
 
     StringView stripped_key;
     BT::Any out_value;
