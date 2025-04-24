@@ -18,6 +18,7 @@
 #include "behaviortree_eut_plugins/actions/ConvertJsonToNode.h"
 #include "behaviortree_eut_plugins/actions/InitializeNode.h"
 #include "behaviortree_eut_plugins/actions/GetSizeNode.h"
+#include "behaviortree_eut_plugins/actions/LoadJsonFromFile.h"
 #include "behaviortree_eut_plugins/actions/ConcatenateStrings.h"
 #include "behaviortree_eut_plugins/actions/SetBlackboardEutNode.h"
 
@@ -172,6 +173,7 @@ BT_REGISTER_NODES(factory)
     factory.registerNodeType<BT::GetSizeNode<nlohmann::json, size_t>>("GetJsonSize");
     factory.registerNodeType<BT::GetSizeNode<nlohmann::json, uint32_t>>("GetJsonSizeUInt");
     factory.registerNodeType<BT::AddKeyValueToJson>("AddKeyValueToJson");
+    factory.registerNodeType<BT::LoadJsonFromFile>("LoadJsonFromFile");
     factory.registerNodeType<BT::InitializeNode<nlohmann::json>>("InitializeJson");
     factory.registerNodeType<BT::AddArrayToJson>("AddArrayToJson");
     factory.registerNodeType<BT::SplitStringToJsonArray>("SplitStringToJsonArray");
