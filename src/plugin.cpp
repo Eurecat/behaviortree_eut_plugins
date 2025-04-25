@@ -13,7 +13,7 @@
 #include "behaviortree_eut_plugins/actions/RandomSequenceValueNode.h"
 #include "behaviortree_eut_plugins/actions/AccessJsonFieldNode.h"
 #include "behaviortree_eut_plugins/actions/SplitStringToJsonArray.h"
-#include "behaviortree_eut_plugins/actions/AddArrayToNode.h"
+#include "behaviortree_eut_plugins/actions/AddJsonToArray.h"
 #include "behaviortree_eut_plugins/actions/AddKeyValueToJson.h"
 #include "behaviortree_eut_plugins/actions/ConvertJsonToNode.h"
 #include "behaviortree_eut_plugins/actions/InitializeNode.h"
@@ -175,7 +175,7 @@ BT_REGISTER_NODES(factory)
     factory.registerNodeType<BT::AddKeyValueToJson>("AddKeyValueToJson");
     factory.registerNodeType<BT::LoadJsonFromFile>("LoadJsonFromFile");
     factory.registerNodeType<BT::InitializeNode<nlohmann::json>>("InitializeJson");
-    factory.registerNodeType<BT::AddArrayToJson>("AddArrayToJson");
+    factory.registerNodeType<BT::AddJsonToArray>("AddJsonToArray");
     factory.registerNodeType<BT::SplitStringToJsonArray>("SplitStringToJsonArray");
     factory.registerNodeType<BT::CheckEmptyJson>("CheckEmptyJson");
     factory.registerNodeType<BT::CheckBoolNode>("CheckBool");

@@ -1,22 +1,22 @@
-#ifndef ADD_ARRAY_TO_JSON
-#define ADD_ARRAY_TO_JSON
+#ifndef ADD_JSON_TO_ARRAY
+#define ADD_JSON_TO_ARRAY
 
 #include <behaviortree_cpp/action_node.h>
 
 namespace BT
 {
-class AddArrayToJson final : public BT::SyncActionNode
+class AddJsonToArray final : public BT::SyncActionNode
 {
     public:
         using BT::SyncActionNode::SyncActionNode;
-        ~AddArrayToJson() = default;
+        ~AddJsonToArray() = default;
 
         static BT::PortsList providedPorts()
         {
             return { BT::InputPort<bool>("override", true, "1 to override the actual array; 0 to append value"),
-                     BT::InputPort<std::string>("input_key", "", "Key name of the array"),
-                     BT::InputPort<std::string>("input_value", "New value or value to append to the array"),
-                     BT::InputPort("input_json", "Input Json array"),
+                     BT::InputPort<std::string>("input_key", "", "Key name of the array, leave empty to just push"),
+                     BT::InputPort("input_json", "New value or value to append to the array"),
+                     BT::InputPort("input_array", "Input Json array"),
                      BT::OutputPort<nlohmann::json>("output_json", "Output Json array")
             };
         }
@@ -25,38 +25,33 @@ class AddArrayToJson final : public BT::SyncActionNode
         {
             const auto& override = getInput<bool>("override");
             const auto& input_key = getInput<std::string>("input_key");
-            const auto& input_value = getInput<std::string>("input_value");
-            const auto& input_json = getInput<std::string>("input_json");
+            const auto& input_value = getInput<nlohmann::json>("input_json");
+            const auto& input_json = getInput<nlohmann::json>("input_array");
 
             if (!override) { throw BT::RuntimeError { name() + ": " + override.error() }; }
             if (!input_value) { throw BT::RuntimeError { name() + ": " + input_value.error() }; }
+            if (!input_json) { throw BT::RuntimeError { name() + ": " + input_json.error() }; }
 
             try
             {
                 // Check if input value has json format in case it's an array or object already
-                nlohmann::json input_value_json;
-                bool value_is_json = false;
-                try {
-                    input_value_json = nlohmann::json::parse(input_value.value());
-                    value_is_json = true;
-                } catch(const nlohmann::json::exception& ex) {}
+                const nlohmann::json& input_value_json = input_value.value();
 
                 // Check if input Json is empty
                 // If you try to parse an empty variable an exception is thrown
                 nlohmann::json output_json;
-                if (!input_json.value().empty()) { output_json = nlohmann::json::parse(input_json.value()); }
+                if (!input_json.value().empty()) { output_json = input_json.value(); }
 
                 if(output_json.is_object()) // Json is an object
                 {
-                    // Clear array if we have to override it
+                    // Clear array elem if we have to override it
                     if (override.value()) { output_json[input_key.value()].clear(); }
 
-                    if(value_is_json) { output_json[input_key.value()].push_back(input_value_json); }
-                    else { output_json[input_key.value()].push_back(input_value.value()); }
+                    output_json[input_key.value()].push_back(input_value_json);
                 }
                 else if(output_json.is_array()) // Json is an array
                 {
-                    if (input_key.value_or("") != "") // Add array with key
+                    if (input_key.value_or("") != "") // Add to array with key
                     {
                         bool filled = false;
                         // Check all the elements of the array for an object with the same key
@@ -68,8 +63,7 @@ class AddArrayToJson final : public BT::SyncActionNode
 
                                     if (override.value()) { key_elem.value().clear(); }
 
-                                    if(value_is_json) { key_elem.value().push_back(input_value_json); }
-                                    else { key_elem.value().push_back(input_value.value()); }
+                                    key_elem.value().push_back(input_value_json);
 
                                     filled = true;
                                     break;
@@ -78,29 +72,26 @@ class AddArrayToJson final : public BT::SyncActionNode
                         if(!filled)
                         {
                             nlohmann::json object;
-                            object[input_key.value()].push_back(input_value.value());
+                            object[input_key.value()].push_back(input_value_json);
                             output_json.push_back(object);
                         }
                     }
-                    else // Add array without key
+                    else // Add to array without key
                     {
                         if (override.value()) { output_json.clear(); }
 
-                        if(value_is_json) { output_json.push_back(input_value_json); }
-                        else { output_json.push_back(input_value.value()); }
+                        output_json.push_back(input_value_json);
                     }
                 }
                 else // Empty Json
                 {
                     if (input_key.value_or("") != "")
                     {
-                        if(value_is_json) { output_json[input_key.value()].push_back(input_value_json); }
-                        else { output_json[input_key.value()].push_back(input_value.value()); }
+                        output_json[input_key.value()].push_back(input_value_json);
                     }
                     else
                     {
-                        if(value_is_json) { output_json.push_back(input_value_json); }
-                        else { output_json.push_back(input_value.value()); }
+                        output_json.push_back(input_value_json);
                     }
                 }
 
