@@ -111,6 +111,8 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
 
     std::vector<flatbuffers::Offset<Serialization::PortConfig>> ports;
     
+    bool is_subtree = dynamic_cast<BT::SubTreeNode*>(node) != nullptr;
+
     // if(auto subtree = dynamic_cast<BT::SubTreeNode*>(node))
     // {
     //   const BT::SubTreeNode& subtreenode_const_ref = *subtree;
@@ -128,15 +130,38 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
         ports.push_back(Serialization::CreatePortConfigDirect(builder, toStr<BT::PreCond>(it.first).c_str(),
                                                               it.second.c_str()));
       }
+
+      const auto manifest_ptr = node_const_ref.config().manifest;
+
       for (const auto& it : node_const_ref.config().input_ports)
       {
-        ports.push_back(Serialization::CreatePortConfigDirect(builder, it.first.c_str(),
-                                                              it.second.c_str()));
+        ports.push_back(Serialization::CreatePortConfigDirect(builder, it.first.c_str(), it.second.c_str()));
       }
+
       for (const auto& it : node_const_ref.config().output_ports)
       {
         ports.push_back(Serialization::CreatePortConfigDirect(builder, it.first.c_str(),
                                                               it.second.c_str()));
+      }
+
+      // Add the ports that are not in the input/output ports, but were defined in the manifest with a default value
+      if(manifest_ptr && manifest_ptr->ports.size() > (node_const_ref.config().input_ports.size() + node_const_ref.config().output_ports.size()))
+      {
+        for (const auto& it : manifest_ptr->ports)
+        {
+          if(node_const_ref.config().input_ports.find(it.first) == node_const_ref.config().input_ports.end() &&
+             node_const_ref.config().output_ports.find(it.first) == node_const_ref.config().output_ports.end())
+          {
+            ports.push_back(Serialization::CreatePortConfigDirect(builder, it.first.c_str(),
+                                                                  it.second.defaultValueString().c_str()));
+          }
+        }
+      }
+
+      // Treat special case of _autoremap for subtree
+      if(is_subtree && node_const_ref.config().input_ports.count("_autoremap") == 0)
+      {
+        ports.push_back(Serialization::CreatePortConfigDirect(builder, "_autoremap", "false"));
       }
 
       for (const auto& it : node_const_ref.config().post_conditions)
