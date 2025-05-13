@@ -39,6 +39,7 @@ class AccessJsonFieldNode final : public BT::SyncActionNode
                 return BT::NodeStatus::SUCCESS;
             }
             catch(const nlohmann::json::exception&) { return BT::NodeStatus::FAILURE; }
+            catch(const std::out_of_range&){ return BT::NodeStatus::FAILURE; }
         }
 };
 }
