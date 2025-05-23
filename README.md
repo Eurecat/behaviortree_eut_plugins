@@ -52,7 +52,7 @@ BT::PublisherZMQ publisher(debugTree, port);
   }
 ```
 
-Monitor and debug your tree through the monitoring functionality available in [Groot humble branch](https://ice.eurecat.org/gitlab/robotics-automation/groot/-/tree/humble). 
+Monitor and debug your tree through the monitoring functionality available in [Groot humble branch](https://github.com/haru-project/Groot/tree/humble). 
 
 ## Additional details you might be interested to
 
