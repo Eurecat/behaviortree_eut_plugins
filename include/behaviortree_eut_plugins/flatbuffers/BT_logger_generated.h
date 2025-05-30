@@ -656,8 +656,9 @@ struct BehaviorTree FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   {
     VT_ROOT_UID = 4,
     VT_DEBUG_MODE = 6,
-    VT_NODES = 8,
-    VT_NODE_MODELS = 10
+    VT_TREENAME = 8,
+    VT_NODES = 10,
+    VT_NODE_MODELS = 12
   };
   uint16_t root_uid() const
   {
@@ -666,6 +667,10 @@ struct BehaviorTree FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   bool debug_mode() const
   {
     return GetField<bool>(VT_DEBUG_MODE, 0);
+  }
+  const flatbuffers::String* treename() const
+  {
+    return GetPointer<const flatbuffers::String*>(VT_TREENAME);
   }
   const flatbuffers::Vector<flatbuffers::Offset<Serialization::TreeNode>>* nodes() const
   {
@@ -684,11 +689,13 @@ struct BehaviorTree FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   {
     return  VerifyTableStart(verifier) && 
             VerifyField<uint16_t>(verifier, VT_ROOT_UID) && VerifyField<bool>(verifier, VT_DEBUG_MODE) &&
+            VerifyOffset(verifier, VT_TREENAME) &&
+            verifier.VerifyString(treename()) &&
             VerifyOffset(verifier, VT_NODES) && verifier.VerifyVector(nodes()) &&
-            // verifier.VerifyVectorOfTables(nodes()) && //TODO check if it can be enabled back again
-           VerifyOffset(verifier, VT_NODE_MODELS) &&
-           verifier.VerifyVector(node_models()) &&
-           verifier.VerifyVectorOfTables(node_models()) && verifier.EndTable();
+            verifier.VerifyVectorOfTables(nodes()) &&
+            VerifyOffset(verifier, VT_NODE_MODELS) &&
+            verifier.VerifyVector(node_models()) &&
+            verifier.VerifyVectorOfTables(node_models()) && verifier.EndTable();
   }
 };
 
@@ -704,6 +711,10 @@ struct BehaviorTreeBuilder
   void add_debug_mode(bool debug_mode)
   {
     fbb_.AddElement<bool>(BehaviorTree::VT_DEBUG_MODE, debug_mode, 0);
+  }
+  void add_tree_name(flatbuffers::Offset<flatbuffers::String> tree_name)
+  {
+    fbb_.AddOffset(BehaviorTree::VT_TREENAME, tree_name);
   }
   void add_nodes(flatbuffers::Offset<
                  flatbuffers::Vector<flatbuffers::Offset<Serialization::TreeNode>>>
@@ -725,12 +736,14 @@ struct BehaviorTreeBuilder
   {
     const auto end = fbb_.EndTable(start_);
     auto o = flatbuffers::Offset<BehaviorTree>(end);
+    fbb_.Required(o, BehaviorTree::VT_TREENAME);
     return o;
   }
+  
 };
 
 inline flatbuffers::Offset<BehaviorTree> CreateBehaviorTree(
-    flatbuffers::FlatBufferBuilder& _fbb, uint16_t root_uid = 0,  bool debug = false,
+    flatbuffers::FlatBufferBuilder& _fbb, flatbuffers::Offset<flatbuffers::String> tree_name, uint16_t root_uid = 0,  bool debug = false,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Serialization::TreeNode>>>
         nodes = 0,
     flatbuffers::Offset<
@@ -742,6 +755,7 @@ inline flatbuffers::Offset<BehaviorTree> CreateBehaviorTree(
   builder_.add_nodes(nodes);
   builder_.add_root_uid(root_uid);
   builder_.add_debug_mode(debug);
+  builder_.add_tree_name(tree_name);
   return builder_.Finish();
 }
 
@@ -757,7 +771,7 @@ inline flatbuffers::Offset<BehaviorTree> CreateBehaviorTreeDirect(
       node_models ?
           _fbb.CreateVector<flatbuffers::Offset<Serialization::NodeModel>>(*node_models) :
           0;
-  return Serialization::CreateBehaviorTree(_fbb, root_uid, false, nodes__, node_models__);
+  return Serialization::CreateBehaviorTree(_fbb, _fbb.CreateString("BehaviorTree"), root_uid, false, nodes__, node_models__);
 }
 
 struct StatusChangeLog FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table

@@ -210,8 +210,10 @@ inline void CreateFlatbuffersBehaviorTree(flatbuffers::FlatBufferBuilder& builde
     node_models.push_back(node_model);
   }
 
+  const std::string tree_name = (!tree.subtrees.empty() && tree.subtrees.at(0)) ? tree.subtrees.at(0)->tree_ID : "BehaviorTree";
+
   auto behavior_tree = Serialization::CreateBehaviorTree(
-      builder, tree.rootNode()->UID(), debuggable, 
+      builder, builder.CreateString(tree_name), tree.rootNode()->UID(), debuggable, 
       builder.CreateVector(fb_nodes),
       builder.CreateVector(node_models));
 
