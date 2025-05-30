@@ -38,6 +38,29 @@ public:
   }
 
 private:
+  inline bool validSignedIntegralType(const std::type_index& type)
+  {
+    return type == typeid(int64_t) || type == typeid(int32_t) || type == typeid(int16_t) || 
+    type == typeid(int8_t);
+  }
+  inline bool validUnsignedIntegralType(const std::type_index& type)
+  {
+    return type == typeid(uint64_t) || type == typeid(uint32_t) || type == typeid(uint16_t) ||
+    type == typeid(uint8_t);
+  }
+  inline bool validIntegralType(const std::type_index& type)
+  {
+    return validSignedIntegralType(type) || validUnsignedIntegralType(type);
+  }
+  inline bool validFloatingPointType(const std::type_index& type)
+  {
+    return type == typeid(float) || type == typeid(double);
+  }
+  inline bool validNumberType(const std::type_index& type)
+  {
+    return validIntegralType(type) || validFloatingPointType(type);
+  }
+
   virtual BT::NodeStatus tick() override
   {
     std::string output_key;
@@ -68,7 +91,7 @@ private:
 
       if(!src_entry)
       {
-        throw RuntimeError("Can't find the port referred by [value]");
+        throw RuntimeError("SetBlackboardEut: Can't find the port referred by [value]");
       }
       if(!dst_entry)
       {
@@ -86,32 +109,76 @@ private:
     if(out_value.empty())
       return NodeStatus::FAILURE;
 
-    bool dst_entry_anytype_allowed = dst_entry && dst_entry->info.type() == typeid(BT::AnyTypeAllowed); 
+    const std::type_index& dst_entry_info_type = dst_entry->info.type();
+    bool dst_entry_anytype_allowed = dst_entry && dst_entry_info_type == typeid(BT::AnyTypeAllowed); 
     bool dst_entry_strongly_typed = dst_entry && dst_entry->info.isStronglyTyped();
 
     if(dst_entry_anytype_allowed && out_value.isString())
     {
       std::scoped_lock scoped_lock(dst_entry->entry_mutex);
+      dst_entry->value = std::move(out_value);
       dst_entry->sequence_id++;
       dst_entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
-      dst_entry->value = std::move(out_value);
     }
     else
     {
       // avoid type issues when port is remapped: current implementation of the set might be a little bit problematic for initialized on the fly values
-      // this still does not attack math issues
-      if(dst_entry_strongly_typed && dst_entry->info.type() != typeid(std::string) && out_value.isString())
+      if(dst_entry_strongly_typed &&  dst_entry_info_type != out_value.type()) // types are mismatching
       {
-        try
+        if(out_value.isString() && dst_entry_info_type != typeid(std::string))// If the destination entry is strongly typed, we need to ensure that string values are converted to the correct type.
         {
-          out_value = dst_entry->info.parseString(out_value.cast<std::string>());
+          try
+          {
+            out_value = dst_entry->info.parseString(out_value.cast<std::string>());
+          }
+          catch(const std::exception& e)
+          {
+            throw LogicError("SetBlackboardEut: Can't convert string [", out_value.cast<std::string>(),
+                            "] to type [", BT::demangle(dst_entry_info_type),
+                            "]: ", e.what());
+          }
         }
-        catch(const std::exception& e)
+        else if(out_value.isNumber() && validNumberType(dst_entry_info_type)) // If the destination entry is strongly typed, we need to ensure that numeric values are converted to the correct type.
         {
-          throw LogicError("Can't convert string [", out_value.cast<std::string>(),
-                          "] to type [", BT::demangle(dst_entry->info.type()),
-                          "]: ", e.what());
+          try
+          {
+            std::scoped_lock scoped_lock(dst_entry->entry_mutex);
+            bool updated = false;
+            if(out_value.isIntegral())
+            {
+              if(validSignedIntegralType(out_value.castedType()) && isCastingSafe(dst_entry_info_type, out_value.cast<int64_t>()))
+              {
+                dst_entry->value.copyInto(out_value);
+                updated = true;
+              }
+              else if(validUnsignedIntegralType(out_value.castedType()) && isCastingSafe(dst_entry_info_type, out_value.cast<uint64_t>()))
+              {
+                dst_entry->value.copyInto(out_value);
+                updated = true;
+              }
+            }
+            else if(validFloatingPointType(out_value.castedType()) && isCastingSafe(dst_entry_info_type, out_value.cast<double>()))
+            {
+              dst_entry->value.copyInto(out_value);
+              updated = true;
+            }
+
+            if(updated)
+            {
+              dst_entry->sequence_id++;
+              dst_entry->stamp = std::chrono::steady_clock::now().time_since_epoch();
+              return NodeStatus::SUCCESS;
+            }
+
+          }
+          catch(const std::runtime_error& re)
+          {
+            throw LogicError("SetBlackboardEut: Can't convert value [", value_str,
+                               "] to type [", BT::demangle(dst_entry_info_type), "]");
+          }
         }
+
+        // for all the other cases, we fallback to the default behavior of the Blackboard::set method which shall already deal correctly with the type mismatch
       }
       config().blackboard->set(output_key, out_value);
     }
