@@ -18,6 +18,7 @@ class ComparisonNode final : public BT::ConditionNode
         {
             return { BT::InputPort<T>("first", "First operand"),
                      BT::InputPort<T>("second", "Second operand"),
+                     BT::InputPort<bool>("throws", false, "On error, throws exception if true, otherwise fails silently"),
                      BT::InputPort<std::string>("comparison_op", "Comparison operator. Valid operators are <, >, <=, >=, == and !=")
                    };
         }
@@ -27,16 +28,17 @@ class ComparisonNode final : public BT::ConditionNode
             const auto& first         = getInput<T>("first");
             const auto& second        = getInput<T>("second");
             const auto& comparison_op = getInput<std::string>("comparison_op");
+            const bool throws_ex      = getInput<bool>("throws").value_or(false);
 
-            if(!first)         { throw BT::RuntimeError { name() + ": " + first.error() };  }
-            if(!second)        { throw BT::RuntimeError { name() + ": " + second.error() }; }
-            if(!comparison_op) { throw BT::RuntimeError { name() + ": " + comparison_op.error() }; }
+            if(!first)         { if(throws_ex) throw BT::RuntimeError { name() + ": " + first.error() }; else return BT::NodeStatus::FAILURE;  }
+            if(!second)        { if(throws_ex) throw BT::RuntimeError { name() + ": " + second.error() }; else return BT::NodeStatus::FAILURE; }
+            if(!comparison_op) { if(throws_ex) throw BT::RuntimeError { name() + ": " + comparison_op.error() }; else return BT::NodeStatus::FAILURE; }
 
             try
             {
                 return comparison_functions_.at(comparison_op.value())(first.value(), second.value()) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
             }
-            catch(const std::out_of_range&) { throw BT::RuntimeError { name() + ": invalid comparison operator " + comparison_op.value() }; }
+            catch(const std::out_of_range&) {  if(throws_ex) throw BT::RuntimeError { name() + ": invalid comparison operator " + comparison_op.value() }; else return BT::NodeStatus::FAILURE; }
         }
 
     private:

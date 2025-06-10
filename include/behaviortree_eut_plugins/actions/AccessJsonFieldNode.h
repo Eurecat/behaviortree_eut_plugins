@@ -38,8 +38,26 @@ class AccessJsonFieldNode final : public BT::SyncActionNode
                 BT::EutUtils::deserializeField(*this, "output", json_value);
                 return BT::NodeStatus::SUCCESS;
             }
-            catch(const nlohmann::json::exception&) { return BT::NodeStatus::FAILURE; }
-            catch(const std::out_of_range&){ return BT::NodeStatus::FAILURE; }
+            catch(const nlohmann::json::exception& e) 
+            { 
+                std::cerr << "AccessJsonField FAILURE: " << e.what() << std::endl;
+                return BT::NodeStatus::FAILURE; 
+            }
+            catch(const BT::RuntimeError& e) 
+            { 
+                std::cerr << "AccessJsonField FAILURE, BT::RuntimeError: " << e.what() << std::endl;
+                return BT::NodeStatus::FAILURE; 
+            }
+            catch(const BT::LogicError& e) 
+            { 
+                std::cerr << "AccessJsonField FAILURE, BT::LogicError:  " << e.what() << std::endl;
+                return BT::NodeStatus::FAILURE; 
+            }
+            catch(const std::out_of_range& e)
+            { 
+                std::cerr << "AccessJsonField FAILURE: " << e.what() << std::endl;
+                return BT::NodeStatus::FAILURE; 
+            }
         }
 };
 }
