@@ -34,7 +34,7 @@ namespace EutUtils
     std::unique_ptr<BT::PortInfo> getPortInfo(const BT::TreeNode& node, const std::string& port_name);
     
     // bool missingTypeInfo(const std::type_index& type);
-    
+    Expected<std::string> getInputAsString(const BT::TreeNode& node, const std::string& port_name, const bool lossy_json_compress_output = false);
     Expected<std::string> getEntryAsString(const std::string& key,const BT::Blackboard::Ptr blackboard, const bool lossy_json_compress_output = false);
 
     PortsValueMap getPortValuesMap(const BT::TreeNode& node, const PortDirection& dir, const bool lossy_json_compress_output = false);

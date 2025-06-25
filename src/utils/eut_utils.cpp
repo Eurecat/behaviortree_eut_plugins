@@ -245,6 +245,67 @@ namespace EutUtils
         return expected_entry;
     }
 
+
+    Expected<std::string> getInputAsString(const BT::TreeNode& node, const std::string& port_name, const bool lossy_json_compress_output)
+    {
+        std::string port_value_str;
+
+        auto input_port_it = node.config().input_ports.find(port_name);
+        if(input_port_it != node.config().input_ports.end())
+        {
+            port_value_str = input_port_it->second;
+        }
+        else if(!node.config().manifest)
+        {
+            return nonstd::make_unexpected(StrCat("getInputAsString() of node '", node.fullPath(),
+                                                "' failed because the manifest is "
+                                                "nullptr (WTF?) and the port_name: [",
+                                                port_name, "] is missing"));
+        }
+        else
+        {
+            // maybe it is declared with a default value in the manifest
+            auto port_manifest_it = node.config().manifest->ports.find(port_name);
+            if(port_manifest_it == node.config().manifest->ports.end())
+            {
+                return nonstd::make_unexpected(StrCat("getInputAsString() of node '", node.fullPath(),
+                                                    "' failed because the manifest doesn't "
+                                                    "contain the port_name: [",
+                                                    port_name, "]"));
+            }
+            const auto& port_info = port_manifest_it->second;
+            // there is a default value
+            if(port_info.defaultValue().empty())
+            {
+                return nonstd::make_unexpected(StrCat("getInputAsString() of node '", node.fullPath(),
+                                                    "' failed because nor the manifest or the "
+                                                    "XML contain the port_name: [",
+                                                    port_name, "]"));
+            }
+            if(port_info.defaultValue().isString())
+            {
+                return port_info.defaultValue().cast<std::string>();
+            }
+        }
+
+        auto blackboard_ptr = BT::TreeNode::getRemappedKey(port_name, port_value_str);
+        if(!blackboard_ptr)
+        {
+            // pure string, not a blackboard key
+            return port_value_str;
+        }
+        else
+        {
+            if(!node.config().blackboard)
+            {
+              return nonstd::make_unexpected("getInputAsString(): trying to access "
+                                             "an invalid Blackboard");
+            }
+            const auto& blackboard_key = blackboard_ptr.value();
+            return getEntryAsString(static_cast<std::string>(blackboard_key), node.config().blackboard, lossy_json_compress_output);
+        }
+    }
+
     Expected<std::string> getEntryAsString(const std::string& key, const BT::Blackboard::Ptr blackboard, const bool lossy_json_compress_output)
     {
         // TODO Devis
