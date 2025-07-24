@@ -53,9 +53,9 @@ class AccessJsonFieldNode final : public BT::SyncActionNode
                 std::cerr << "AccessJsonField FAILURE, BT::LogicError:  " << e.what() << std::endl;
                 return BT::NodeStatus::FAILURE; 
             }
-            catch(const std::out_of_range& e)
+            catch(const std::exception& e)
             { 
-                std::cerr << "AccessJsonField FAILURE: " << e.what() << std::endl;
+                std::cerr << "AccessJsonField FAILURE exception: " << e.what() << std::endl;
                 return BT::NodeStatus::FAILURE; 
             }
         }
