@@ -1,7 +1,7 @@
 #include "behaviortree_eut_plugins/utils/eut_utils.h"
 
 
-#define JSON_TRUNC_STR_DIM 16
+#define JSON_TRUNC_DIM 16
 
 namespace BT
 {
@@ -99,13 +99,23 @@ namespace EutUtils
             {
                 element = lossyJsonCompress(element);
             }
+            if(json.size() > JSON_TRUNC_DIM)
+            {
+                // take just first x elements....
+                nlohmann::json truncated = nlohmann::json::array();
+                for (size_t i = 0; i < JSON_TRUNC_DIM; ++i)
+                {
+                    truncated.push_back(json[i]);
+                }
+                return truncated;
+            }
         } 
         else if (json.is_string()) 
         {
             std::string str = json.get<std::string>();
-            if (str.size() > JSON_TRUNC_STR_DIM) 
+            if (str.size() > JSON_TRUNC_DIM) 
             {
-                str = str.substr(0, JSON_TRUNC_STR_DIM); // Truncate to 16 characters
+                str = str.substr(0, JSON_TRUNC_DIM) + "..."; // Truncate to 16 characters
             }
             return nlohmann::json{str};
         } 
@@ -162,8 +172,13 @@ namespace EutUtils
                 else if(auto json_expected = eutToJson(any))
                 {
                     auto& json = json_expected.value();
+                    const std::size_t original_size = json.size();
+                    if(lossy_json_compress_output) 
+                    {
+                        json = lossyJsonCompress(json);
+                    }
                     
-                    return lossy_json_compress_output? lossyJsonCompress(json).dump() : json.dump();
+                    return json.dump() + ((json.size() < original_size)? "..." : "");
                 }
                 else
                     return nonstd::make_unexpected(json_expected.error());;
@@ -368,9 +383,18 @@ namespace EutUtils
                 // if(to_str_converter_it != string_converters.end())
                 // TODO Devis
                 // return bb_ptr->replaceKeysWithStringValues(val->port_info.toString(val->value));
-                BT::Expected<nlohmann::json> json = eutToJson(val->value, val->info.type());
-                if(json.has_value())
-                    return lossy_json_compress_output? lossyJsonCompress(json.value()).dump() : json.value().dump();
+                BT::Expected<nlohmann::json> json_opt = eutToJson(val->value, val->info.type());
+                if(json_opt.has_value())
+                {
+                    nlohmann::json& json = json_opt.value();
+                    const std::size_t original_size = json.size();
+                    if(lossy_json_compress_output) 
+                    {
+                        json = lossyJsonCompress(json);
+                    }
+                    
+                    return json.dump() + ((json.size() < original_size)? "..." : "");
+                }
                 else
                     return nonstd::make_unexpected(StrCat("Type info for key [",key,
                         "] is " , val->info.typeName(),
