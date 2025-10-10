@@ -18,6 +18,7 @@
 #include "behaviortree_eut_plugins/actions/ConvertJsonToNode.h"
 #include "behaviortree_eut_plugins/actions/InitializeNode.h"
 #include "behaviortree_eut_plugins/actions/GetSizeNode.h"
+#include "behaviortree_eut_plugins/actions/GetUpdatedTime.h"
 #include "behaviortree_eut_plugins/actions/LoadJsonFromFile.h"
 #include "behaviortree_eut_plugins/actions/ConcatenateStrings.h"
 #include "behaviortree_eut_plugins/actions/SetBlackboardEutNode.h"
@@ -143,9 +144,16 @@ public:
 private:
 };
 
+namespace BT 
+{
+  std::chrono::steady_clock::time_point GetUpdatedTime::start_time_ = std::chrono::steady_clock::now(); // consider default start_time last construction of a node of this class
+}
+ 
+
 BT_REGISTER_NODES(factory)
 {
     factory.registerNodeType<BT::AccessJsonFieldNode>("AccessJsonField");
+    factory.registerNodeType<BT::GetUpdatedTime>("GetUpdatedTime");
 
     factory.registerNodeType<BT::ForEachLoopNode<nlohmann::json>>("ForEachLoopJson");
   
