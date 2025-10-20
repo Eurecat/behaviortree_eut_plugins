@@ -123,7 +123,19 @@ namespace EutUtils
 
     inline void deserializeField(BT::TreeNode& node, const std::string& port, const Json& field)
     {
-        deserialize_field_map.at(field.type())(node, port, field);
+        try
+        {
+            auto it = deserialize_field_map.find(field.type());
+            if (it != deserialize_field_map.end()) {
+                it->second(node, port, field);
+            } else {
+                throw BT::RuntimeError("Unsupported JSON field type: ", field.type_name());
+            }
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << "Error deserializing field for port '" << port << "': " << e.what();
+        }
     }
 
 }
