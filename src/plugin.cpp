@@ -216,4 +216,7 @@ BT_REGISTER_NODES(factory)
     factory.registerNodeType<BT::BlackboardPreconditionNode<double>>("BlackboardCheckDouble");
     factory.registerNodeType<BT::BlackboardPreconditionNode<std::string>>("BlackboardCheckString");
     factory.registerNodeType<BT::BlackboardPreconditionNode<bool>>("BlackboardCheckBool");
+
+
+    factory.registerNodeType<BT::SwitchNode<7>>("Switch7");
 }
