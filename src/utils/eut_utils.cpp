@@ -84,6 +84,31 @@ namespace EutUtils
         }
     }
 
+    std::string utf8_safe_truncate(const std::string& s, size_t max_bytes) 
+    {
+        if (s.size() <= max_bytes) return s;
+
+        size_t i = max_bytes;
+        // Move back until a valid leading byte
+        while (i > 0 && ((unsigned char)s[i] & 0xC0) == 0x80) {
+            --i;
+        }
+
+        // Now verify that s[i] is a valid leading byte
+        unsigned char c = (unsigned char)s[i];
+        if (c >= 0x80) {
+            int needed = (c & 0xE0) == 0xC0 ? 2 :
+                        (c & 0xF0) == 0xE0 ? 3 :
+                        (c & 0xF8) == 0xF0 ? 4 : 1;
+            if (i + needed > max_bytes) {
+                // cut before this entire character
+                return s.substr(0, i) + "...";
+            }
+        }
+
+        return s.substr(0, max_bytes) + "...";
+    }
+
     nlohmann::json lossyJsonCompress(nlohmann::json& json)
     {
         if (json.is_object()) 
@@ -113,11 +138,7 @@ namespace EutUtils
         else if (json.is_string()) 
         {
             std::string str = json.get<std::string>();
-            if (str.size() > JSON_TRUNC_DIM) 
-            {
-                str = str.substr(0, JSON_TRUNC_DIM) + "..."; // Truncate to 16 characters
-            }
-            return nlohmann::json{str};
+            return nlohmann::json{utf8_safe_truncate(str, JSON_TRUNC_DIM)};
         } 
         else if (json.is_number_float()) 
         {
